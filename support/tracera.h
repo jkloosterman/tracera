@@ -14,8 +14,17 @@
  *  _endLoop(UNIQUE_ID);
  */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 void _startLoop(int staticId);
 void _endLoop(int staticId);
 void _loopHeader(int staticId);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
