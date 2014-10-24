@@ -1,0 +1,2 @@
+class ZeroLatency(object):
+    pass

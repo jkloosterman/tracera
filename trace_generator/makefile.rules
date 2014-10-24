@@ -1,0 +1,12 @@
+CXX = clang++
+TOOL_CXXFLAGS += -std=c++0x -g
+TOOL_LIBS += -lsqlite3
+
+SOURCES = $(OBJDIR)trace_generator$(OBJ_SUFFIX) $(OBJDIR)BBInstructions$(OBJ_SUFFIX) $(OBJDIR)Database$(OBJ_SUFFIX) $(OBJDIR)Tracer$(OBJ_SUFFIX) $(OBJDIR)MemoryTrace$(OBJ_SUFFIX) $(OBJDIR)SqliteDB$(OBJ_SUFFIX)
+
+$(SOURCES): *.h
+
+all: $(OBJDIR)trace_generator$(PINTOOL_SUFFIX)
+
+$(OBJDIR)trace_generator$(PINTOOL_SUFFIX): $(SOURCES)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
