@@ -13,7 +13,7 @@ class Simulator(object):
 
         self.cores = []
         for i in range(config.num_cores):
-            core = Core(self.core_streams[i], memory_system_factory, config, stats)
+            core = Core(i, self.core_streams[i], memory_system_factory, config, stats)
             self.cores.append(core)
 
         self.num_cycles = 0

@@ -5,7 +5,8 @@ from WarpScheduler import *
 import sys
 
 class Core(object):
-    def __init__(self, warp_streams, memory_system_factory, config, stats):
+    def __init__(self, core_idx, warp_streams, memory_system_factory, config, stats):
+        self.core_idx = core_idx
         self.tick_count = 0
         self.next_warp_id = 0
         self.stats = stats
@@ -29,13 +30,13 @@ class Core(object):
         self.pipelines = []
 
         for pipeline in config.pipelines:
-            if pipeline["type"] == "I" or pipeline["type"] == "F" or pipeline["type"] == "M":
-#            if pipeline["type"] == "I" or pipeline["type"] == "F":
+#            if pipeline["type"] == "I" or pipeline["type"] == "F" or pipeline["type"] == "M":
+            if pipeline["type"] == "I" or pipeline["type"] == "F":
                 p = Pipeline(pipeline["stages"], pipeline["width"], pipeline["type"])
                 self.pipelines.append(p)
-#            elif pipeline["type"] == "M":
-#                p = memory_system_factory.createMemorySystem()
-#                self.pipelines.append(p)
+            elif pipeline["type"] == "M":
+                p = memory_system_factory.createMemorySystem(self.core_idx)
+                self.pipelines.append(p)
             else:
                 assert(False and "Unknown pipeline type: " + pipeline.type)
 
@@ -64,11 +65,11 @@ class Core(object):
 
     def status(self):
         self.stats.dump()
-        return "Core: %d warps remaining." % len(self.warp_streams)
+        return "Core %d: %d warps remaining." % (self.core_idx, len(self.warp_streams))
     
 
     def dump(self):
-        print "************** BEGIN CYCLE %d *******************" % self.tick_count
+        print "************** BEGIN CYCLE %d, core %d *******************" % (self.tick_count, self.core_idx)
         
         print "Scoreboards:"
         print "============"

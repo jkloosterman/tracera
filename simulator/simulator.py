@@ -15,7 +15,7 @@ import os
 from memory_system.MemorySystemFactory import MemorySystemFactory
 from warp_assembly.warp_assembly import *
 from simulator.simulator import *
-from simulator.Stats import Stats
+from common.Stats import Stats
 
 # Config files should be Python. That way they
 #  can build memory systems and such.
@@ -68,7 +68,7 @@ def main():
     # Set up and run the simulation
     stats = Stats()
     warp_assembly = WarpAssembly(db, loop_id, warp_width)
-    memory_system_factory = MemorySystemFactory(config)
+    memory_system_factory = MemorySystemFactory(config, stats)
     simulator = Simulator(warp_assembly, memory_system_factory, config, stats)
     num_cycles = simulator.simulate()
 

@@ -12,13 +12,15 @@ def CreateMemorySystem(system_type):
         assert(False)
 
 class MemorySystem(object):
-    def __init__(self, frontend, coalescer, caches, miss_queue_size):
+    def __init__(self, frontend, coalescer, caches, miss_queue_size, stats, core_idx):
         self.frontend = frontend
         self.coalescer = coalescer
         self.num_banks = len(caches)
         self.miss_queues = [MissQueue(miss_queue_size, cache) for cache in caches]
         self.warp_reconstructors = [WarpReconstructor() for x in range(self.num_banks)]
         self.issue_rr = 0
+        self.stats = stats
+        self.core_idx = core_idx
 
         # We store these as a set so that tick() can call each unique cache once.
         self.cache_set = set(caches)
@@ -59,9 +61,13 @@ class MemorySystem(object):
 
         if self.frontend.canIssue():
             if self.coalescer.canAccept():
+                self.stats.increment_core(self.core_idx, "coalescer_accept_cycles", 1)
                 self.coalescer.accept(self.frontend.issue())
+            else:
+                self.stats.increment_core(self.core_idx, "coalescer_stall_cycles", 1)
 
         if self.coalescer.canIssue():
+            self.stats.increment_core(self.core_idx, "coalescer_issue_cycles", 1)
             self.coalescer.issue(self.miss_queues)
 
     def dump(self):

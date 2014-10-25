@@ -15,6 +15,10 @@ class Stats(object):
         else:
             self.stats[name] += amount
 
+    # Fixme to handle multiple cores better.
+    def increment_core(self, core_idx, name, amount):
+        self.increment("%s_%d" % (name, core_idx), amount)
+
     def set(self, name, amount):
         self.stats[name] = amount
 
