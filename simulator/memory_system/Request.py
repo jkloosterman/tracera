@@ -13,6 +13,7 @@ class Request(object):
         self.requesters = []
         self.has_memory = False
 
+    # Note that this will modify warp.
     def addRequester(self, warp):
         self.requesters.append(warp)
 

@@ -1,8 +1,8 @@
 from Coalescer import Coalescer
 
-class DefaultCoalescer(Coalescer):
+class IntrawarpCoalescer(Coalescer):
     def __init__(self, banking_policy):
-        super(DefaultCoalescer, self).__init__(banking_policy)
+        super(IntrawarpCoalescer, self).__init__(banking_policy)
         self.bank_reqs = {}
 
     def canAccept(self):
@@ -51,3 +51,6 @@ class DefaultCoalescer(Coalescer):
             bank_caches[i].accept(self.bank_reqs[i].pop())
             if len(self.bank_reqs[i]) == 0:
                 del self.bank_reqs[i]
+    
+    def dump(self):
+        print "Intrawarp Coalescer: %d banks with requests" % len(self.bank_reqs)

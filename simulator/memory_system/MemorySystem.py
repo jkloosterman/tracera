@@ -72,6 +72,7 @@ class MemorySystem(object):
 
     def dump(self):
         self.frontend.dump()
+        self.coalescer.dump()
 
         print "Miss queues:"
         for i in range(len(self.miss_queues)):
