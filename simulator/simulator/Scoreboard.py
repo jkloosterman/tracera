@@ -24,9 +24,11 @@ class Scoreboard(object):
         #  been issued.
         self.to_issue_threads = [False for x in range(warp_width)]
 
-        # completed_threads are the threads that have completed in
-        #  the core.
-        self.completed_threads = [False for x in range(warp_width)]
+        # completes are the threads that have completed in
+        #  the core. 0 means there are no completes outstanding.
+        #  There can be >1 complete outstanding when a memory
+        #   request is split.
+        self.completes = [1 for x in range(warp_width)]
 
     def update(self):
         # This is slow. To make it faster, replace the arrays with
@@ -46,7 +48,7 @@ class Scoreboard(object):
         # Reset bitsets
         self.issued_threads = [False for x in range(self.warp_width)]
         self.to_issue_threads = [False for x in range(self.warp_width)]
-        self.completed_threads = [False for x in range(self.warp_width)]
+        self.completes = [1 for x in range(self.warp_width)]
 
         # Activate threads with real instructions
         num_active_threads = 0
@@ -56,7 +58,6 @@ class Scoreboard(object):
             else:
                 self.to_issue_threads[i] = True
                 num_active_threads += 1
-        
 
         # See if we are a load, and count instruction type
         for ins in self.current_instruction:
@@ -100,7 +101,12 @@ class Scoreboard(object):
         return True
 
     def instruction_complete(self):
-        return self.all_issued() and self.bitset_equal(self.issued_threads, self.completed_threads)
+        for i in range(self.warp_width):
+            if self.issued_threads[i]:
+                if self.completes[i] > 0:
+                    return False
+
+        return self.all_issued()
 
     def finished(self):
         return self.is_finished
@@ -144,7 +150,7 @@ class Scoreboard(object):
                 #  dependent. If not, we can schedule the next instruction
                 #  right away.
                 if not self.current_is_load:
-                    self.completed_threads[i] = True
+                    self.completes[i] = 0
 
             self.to_issue_threads[i] = False
 
@@ -161,6 +167,10 @@ class Scoreboard(object):
                 return "M"
         assert(False and "Instruction has no type")
 
+    def add_extra_complete(self, ip, thread_offset, thread, num_completes):
+        assert(ip == self.ip)
+        self.completes[thread_offset + thread] += num_completes
+
     def complete(self, warp):
         # We weren't waiting for this warp.
         if warp.ip != self.ip:
@@ -168,7 +178,7 @@ class Scoreboard(object):
 
         for i in range(len(warp.active_threads)):
             if warp.active_threads[i]:
-                self.completed_threads[warp.thread_offset + i] = True
+                self.completes[warp.thread_offset + i] -= 1
         
     def dump(self):
         print "Scoreboard %d:" % self.warp_id

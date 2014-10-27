@@ -26,13 +26,10 @@ class Frontend(object):
         next_line = line + self.line_size
         lines.append((line, ac_type))
 
-# XXX: TEMP: need to figure out how to notify scoreboard
-#  to wait for multiple requests.
-#
-#        while address + size >= next_line:
-#            line = next_line
-#            next_line += self.line_size
-#            lines.append((line, ac_type))
+        while address + size >= next_line:
+            line = next_line
+            next_line += self.line_size
+            lines.append((line, ac_type))
         
         return lines
 
@@ -48,6 +45,12 @@ class Frontend(object):
             lines = []
             if warp.active_threads[i]:
                 lines = self.splitCacheLines(warp.instruction[i])
+                if len(lines) > 1 and lines[0][1] == "L":
+                    # Notify the scoreboard that it needs to wait for
+                    #  extra requests to come back.
+                    # Note we do this just for loads, not for stores,
+                    #  because stores are independent anyways.
+                    warp.add_extra_completes(i, len(lines) - 1)
 
             # Create Requests
             thread_requests = []

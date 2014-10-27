@@ -21,6 +21,7 @@ class MemorySystemFactory(object):
         elif self.config.coalescer == 'full_associative_oldest':
             coalescer = FullAssociativeOldestCoalescer(self.banking_policy, 8)
         else:
+            print "MemorySystemFactory:"
             print "Unknown coalescer type '%s'."
             print "Choices: 'intra_warp', 'full_associative_oldest'"
             exit(1)
