@@ -56,7 +56,7 @@ class Core(object):
         for i in range(self.num_scoreboards):
             if self.scoreboards[i] is None or self.scoreboards[i].finished():
                 if len(self.warp_streams) > 0:
-                    self.scoreboards[i] = Scoreboard(self.next_warp_id, self.config.warp_width, self.warp_streams.pop(), self.stats)
+                    self.scoreboards[i] = Scoreboard(self.next_warp_id, self.config.warp_width, self.warp_streams.pop(0), self.stats)
                     self.next_warp_id += 1
 
         for i in range(self.num_scoreboards):

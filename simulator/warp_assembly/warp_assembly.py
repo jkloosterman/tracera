@@ -14,4 +14,4 @@ class WarpAssembly(object):
 
     def streams(self):
         for i in range(self.num_warps):
-            yield WarpStream(self.loop, i, self.warp_size)
+            yield WarpStream(self.loop, self.warp_size * i, self.warp_size)

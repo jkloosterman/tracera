@@ -12,7 +12,7 @@ class Loop(object):
         self.db = db
         self.loop_id = loop_id
 
-    def buildTrace(self, trace_id, mem_trace_id):
+    def buildTrace(self, iteration, trace_id, mem_trace_id):
         c = self.db.cursor()
         c.execute(
             "SELECT type, CASE "
@@ -28,7 +28,7 @@ class Loop(object):
         bb_sequence = 0
         for row in c:
             if row[0] == 0:
-                ret.append(BasicBlock(self.db, row[1], mem_trace_id, bb_sequence))
+                ret.append(BasicBlock(self.db, row[1], iteration, trace_id, mem_trace_id, bb_sequence))
             else:
                 ret.append(SequentialLoop(self.db, row[1]))
             bb_sequence += 1
@@ -43,26 +43,42 @@ class ParallelLoop(Loop):
     def __init__(self, db, loop_id):
         super(ParallelLoop, self).__init__(db, loop_id)
 
-    def getWarp(self, warp_offset, warp_size):
+    def getWarp(self, thread_offset, warp_size):
         c = self.db.cursor()
         
         c.execute(
             "SELECT traceId, memoryTraceId FROM loops "
-            + "WHERE loopId=? AND iteration >= ? AND iteration < ?",
-            (self.loop_id, warp_size * warp_offset, warp_size * (warp_offset + 1)))
-        trace_ids = [(x[0], x[1]) for x in c]
-        unique_trace_ids = set(trace_ids)
+            + "WHERE loopId=? AND iteration >= ? AND iteration < ?"
+            + "ORDER BY iteration ASC",
+            (self.loop_id, thread_offset, thread_offset + warp_size))
 
-        traces = [self.buildTrace(x[0], x[1]) for x in unique_trace_ids]
+        # XXX: get this correct before trying to cache it to speed it up.
+#        print "PLoop: thread_offset: %d, warp_size: %d" % (thread_offset, warp_size)
+#        print "PLoop: loop_id: %d, first iteration %d, end iteration %d" % (self.loop_id, thread_offset, thread_offset + warp_size)
+        trace_ids = [(x[0], x[1]) for x in c]
+#        unique_trace_ids = list(set(trace_ids))
+#
+#        trace_map = {}
+#        for trace_id in unique_trace_ids:
+#            trace_map[trace_id] = self.buildTrace(trace_id[0], trace_id[1])
+#        traces = [trace_map[x] for x in trace_ids]
+
+        traces = []
+        for i, trace_id in enumerate(trace_ids):
+            traces.append(self.buildTrace(thread_offset + i, trace_id[0], trace_id[1]))
+
+#        print "Trace IDs: ", trace_ids
+#        print "Traces: ", traces
         warp = merge_traces(traces)
-        
+#        print "Warp: ", warp
+
         # Replace -1s with stalls
         for w in warp:
             for i in range(len(w)):
                 if w[i] == -1:
                     w[i] = Stall()
 
-        return Warp(self.db, warp, warp_offset)
+        return Warp(self.db, warp, thread_offset)
         
 class SequentialLoop(Loop):
     def __init__(self, db, loop_id):
@@ -87,7 +103,10 @@ class SequentialLoop(Loop):
         # We don't care about our outer iteration ID at all.
 
         trace_ids = self.getMemTraceIds()
-        traces = [self.buildTrace(x[0], x[1]) for x in trace_ids]
+
+        traces = []
+        for i, trace_id in enumerate(trace_ids):
+            traces.append(self.buildTrace(i, trace_id[0], trace_id[1]))
 
         instructions = []
         # Each entry in traces is an iteration.
@@ -112,9 +131,11 @@ class SequentialLoop(Loop):
 bbComponentCache = {}
 
 class BasicBlock:
-    def __init__(self, db, bb_id, mem_trace_id, bb_sequence):
+    def __init__(self, db, bb_id, iteration, trace_id, mem_trace_id, bb_sequence):
         self.db = db
         self.bb_id = bb_id
+        self.iteration = iteration
+        self.trace_id = trace_id
         self.mem_trace_id = mem_trace_id
         self.bb_sequence = bb_sequence
 
@@ -133,6 +154,7 @@ class BasicBlock:
 
         for i in range(len(instructions)):
             if instructions[i] == "L" or instructions[i] == "S":
+#                print "bb:", self.bb_id, "iteration:", self.iteration, "trace_id:", self.trace_id, "mem_trace_id:", self.mem_trace_id
                 mtn = MemoryTraceNode(self.db, self.mem_trace_id, self.bb_sequence, mem_sequence)
                 mem_sequence += 1
                 address, size = mtn.getAddress(iteration)
@@ -183,19 +205,21 @@ class Stall:
         return "stall"
 
 class Warp:
-    def __init__(self, db, trace_warp, warp_offset):
+    def __init__(self, db, trace_warp, thread_offset):
         self.db = db
         self.trace_warp = trace_warp
         self.trace_idx = 0
-        self.warp_offset = warp_offset
+        self.thread_offset = thread_offset
 
     def iter_bbs(self):
+#        print "Offset:", self.thread_offset
+
         for bb in self.trace_warp:
 #            print "BB", bb
 
             instructions = []
             for i in range(len(bb)):
-                instructions.append(bb[i].getInstructions(self.warp_offset + i))
+                instructions.append(bb[i].getInstructions(self.thread_offset + i))
 
             for ins in itertools.izip_longest(*instructions):
                 yield ins
