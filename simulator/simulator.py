@@ -36,7 +36,8 @@ config_params = [
     "line_size",
     "mem_frontend_depth",
     "dram_latency",
-    "miss_queue_size"
+    "miss_queue_size",
+    "coalescer"
 ]
 def dump_config_csv(config, fp):
     for param in config_params:
