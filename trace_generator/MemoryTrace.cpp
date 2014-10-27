@@ -203,6 +203,7 @@ void MemoryTraceNode::addAccess(unsigned iterationId, TraceAccess &access)
 	    type = RANDOM;
 	    for (auto it = iterations.begin(); it != iterations.end(); ++it)
 		randomAddresses.push_back(constantAddress);
+	    assert(randomAddresses.size() == iterations.size());
 	    randomAddresses.push_back(access.address);
 	}
     }
@@ -228,12 +229,15 @@ void MemoryTraceNode::addAccess(unsigned iterationId, TraceAccess &access)
 			     + ((*it - linearBaseIteration) * linearCoefficient));
 		randomAddresses.push_back(ptr);
 	    }
+	    assert(randomAddresses.size() == iterations.size());
+	    randomAddresses.push_back(access.address);
 	}
     }
     else if (type == RANDOM)
     {
 	assert(access.size == access.size);
 	assert(rwType == access.type);
+	assert(randomAddresses.size() == iterations.size());
 
 	randomAddresses.push_back(access.address);
     }
