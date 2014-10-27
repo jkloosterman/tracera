@@ -16,10 +16,28 @@ class FullAssociativeOldestCoalescer(Coalescer):
     def canIssue(self):
         return len(self.request_deque) > 0
 
-    # XXX: we need to change this to not look past stores
     def coalesce_all(self, request):
+        # Do a first scan to find any stores to the line.
+        # We can only coalesce requests that come before
+        #  the store in the deque.
+        store_idx = -1
+        for i, warp in enumerate(self.request_deque):
+            for r in warp:
+                if r is None:
+                    continue
+                if r.cache_line != request.cache_line:
+                    continue
+                if r.access_type == "S":
+                    store_idx = i
+                    break
+            if store_idx >= 0:
+                break
+
         num_coalesces = 0
-        for warp in self.request_deque:
+        for warp_idx, warp in enumerate(self.request_deque):
+            # Don't coalesce past stores
+            if store_idx >= 0 and warp_idx > store_idx:
+                break
             for i in range(len(warp)):
                 if warp[i] is None:
                     continue
