@@ -40,10 +40,10 @@ class Request(object):
                 self.requesters.append(other_warp)
 
     def finished(self):
-        return self.has_memory and len(self.requesters) == 0
+        return len(self.requesters) == 0
 
     def canGenerateWarp(self):
-        return self.has_memory and len(self.requesters) > 0
+        return len(self.requesters) > 0
 
     def generateWarp(self):
         return self.requesters.pop()

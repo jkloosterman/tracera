@@ -133,9 +133,9 @@ class Core(object):
         self.update_scoreboards()
 
         # Show what we're up to
-        if self.tick_count > 100000:
-            self.dump()
-            exit(1)
+#        if self.tick_count > 100000:
+#            self.dump()
+#            exit(1)
 
 #        self.dump()
         self.tick_count += 1

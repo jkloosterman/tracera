@@ -26,10 +26,13 @@ class Frontend(object):
         next_line = line + self.line_size
         lines.append((line, ac_type))
 
-        while address + size >= next_line:
-            line = next_line
-            next_line += self.line_size
-            lines.append((line, ac_type))
+# XXX: TEMP: need to figure out how to notify scoreboard
+#  to wait for multiple requests.
+#
+#        while address + size >= next_line:
+#            line = next_line
+#            next_line += self.line_size
+#            lines.append((line, ac_type))
         
         return lines
 

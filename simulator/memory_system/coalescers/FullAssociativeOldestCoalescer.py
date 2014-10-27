@@ -16,6 +16,7 @@ class FullAssociativeOldestCoalescer(Coalescer):
     def canIssue(self):
         return len(self.request_deque) > 0
 
+    # XXX: we need to change this to not look past stores
     def coalesce_all(self, request):
         num_coalesces = 0
         for warp in self.request_deque:
@@ -26,12 +27,12 @@ class FullAssociativeOldestCoalescer(Coalescer):
                     request.merge(warp[i])
                     warp[i] = None
                     num_coalesces += 1
-        print "%d coalesces" % num_coalesces
-        print request
+#        print "%d coalesces" % num_coalesces
+#        print request
 
     def issue(self, bank_caches):
-        print "ISSUE ==========="
-        self.dump()
+#        print "ISSUE ==========="
+#        self.dump()
 
         num_issued = 0
         for i in range(len(bank_caches)):
@@ -65,7 +66,7 @@ class FullAssociativeOldestCoalescer(Coalescer):
             num_issued += 1
 
         # If the first rows in the deque have no more requests, pop it.
-        self.dump()
+#        self.dump()
 
         num_pop = 0
         for warp in self.request_deque:
@@ -80,16 +81,18 @@ class FullAssociativeOldestCoalescer(Coalescer):
                 num_pop += 1
         for i in range(num_pop):
             self.request_deque.pop(0)
-        print "Num_pop:", num_pop
-        print "END ISSUE ==============="
-        print ""
+ #       print "Num_pop:", num_pop
+ #       print "END ISSUE ==============="
+ #       print ""
 
     def dump(self):
         print "Buffer:"
         for warp in self.request_deque:
+            print "Warp: ",
             for request in warp:
                 if request is None:
                     print "[none]",
                 else:
                     print request,
+            print ""
         print ""
