@@ -54,9 +54,6 @@ class FullAssociativeOldestCoalescer(Coalescer):
 
         num_issued = 0
         for i in range(len(bank_caches)):
-            if not bank_caches[i].canAccept():
-                continue
-
             # Find the first request that maps to this bank.
             # Since the oldest warps are on top of the deque, this means
             #  old requests will be issued before new ones.
@@ -65,7 +62,7 @@ class FullAssociativeOldestCoalescer(Coalescer):
                 for j in range(len(warp)):
                     if warp[j] is None:
                         continue
-                    if self.banking_policy.bank(warp[j].cache_line) == i:
+                    if self.banking_policy.bank(warp[j].cache_line) == i and bank_caches[i].can_accept_line(warp[j].cache_line):
                         first_request = warp[j]
                         warp[j] = None
                         break

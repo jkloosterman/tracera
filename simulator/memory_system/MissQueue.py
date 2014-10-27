@@ -7,17 +7,17 @@ class MissQueue(object):
         self.cur_tick = 0
         self.ready_idxs = []
 
-    def canAccept(self):
+    def can_accept_line(self, line):
         hasSlot = False
         for q in self.queue:
             if q is None:
                 hasSlot = True
                 break
 
-        return self.cache.canAccept() and hasSlot
+        return hasSlot and self.cache.can_accept_line(line)
 
     def accept(self, request):
-        assert(self.canAccept())
+        assert(self.can_accept_line(request.cache_line))
         latency = self.cache.accept(request)
 
         idx = self.addToQueue(request)

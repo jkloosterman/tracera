@@ -4,7 +4,7 @@ class Dram(object):
         self.latency = latency
         self.accepted_this_cycle = 0
 
-    def canAccept(self):
+    def can_accept_line(self, line):
         return self.accepted_this_cycle < self.num_ports
 
     def accept(self, line):

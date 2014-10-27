@@ -7,26 +7,31 @@ class CacheLine(object):
         self.hit_latency = hit_latency
         self.lines = []
         self.future_events = {}
-        self.miss_skid = None
         self.cur_tick = 0
 
-    def can_accept(self):
-        return self.miss_skid is None
-
-    def accept(self, line):
+    def is_hit(self, line):
         hit_idx = -1
         for i in range(len(self.lines)):
             if line == lines[i]:
                 hit_idx = i
                 break
+        return hit_idx
 
+    def can_accept_line(self, line):
+        if is_hit(line) > -1:
+            return True
+        else:
+            return self.mem_side.can_accept_line(line)
+
+    def accept(self, line):
+        hit_idx = is_hit(line)
         if hit_idx:
             self.lines.pop(i)
             self.lines.append(i)
             return hit_latency
 
         # A miss.
-        if self.mem_side.can_accept():
+        if self.mem_side.can_accept_line(line):
             latency = self.mem_side.accept(line)
 
             assert(latency > 0)
@@ -37,10 +42,8 @@ class CacheLine(object):
             else:
                 self.future_events[data_tick] = [line]
             return data_tick
-
-        # If our backing cache is busy, then put in miss_skid until
-        #  it is ready.
-        # Problem: we can't return a latency to the requestor.
+        else:
+            assert(False and "We promised to accept something that we can't.")
 
     def tick(self):
         pass
