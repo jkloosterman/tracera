@@ -71,9 +71,9 @@ def atomic_copy(src, dest, lockfile):
                 # Close the lock file
                 os.close(fd)
                 # And delete it.
-                shutil.remove(lockfile)
+                os.remove(lockfile)
                 proceed = True
-            except:
+            except OSError:
                 print "atomic_copy: lost race for copy lock for", dest
                 time.sleep(5)
 

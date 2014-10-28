@@ -27,7 +27,7 @@ class Config:
 
 	self.miss_queue_size = 50
 	self.output_file = 'out/tau.csv'
-        self.on_simpool = False
+        self.on_simpool = True
 
 #       self.coalescer = 'intra_warp'
         self.coalescer = 'full_associative_oldest'
