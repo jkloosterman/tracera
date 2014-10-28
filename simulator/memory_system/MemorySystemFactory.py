@@ -23,17 +23,24 @@ class MemorySystemFactory(object):
             coalescer = FullAssociativeOldestCoalescer(self.banking_policy, 8)
         else:
             print "MemorySystemFactory:"
-            print "Unknown coalescer type '%s'."
+            print "Unknown coalescer type '%s'." % self.config.coalescer
             print "Choices: 'intra_warp', 'full_associative_oldest'"
             exit(1)
 
         if self.config.cache_system == 'dram_only':
             caches = [self.dram for i in range(self.config.num_banks)]
+            cache_system_ticks = [self.dram]
         elif self.config.cache_system == 'l1':
             l1_bank_size = self.config.l1_size / self.config.num_banks
             caches = []
             for i in range(self.config.num_banks):
                 cache = Cache(self.dram, l1_bank_size, self.config.line_size, self.config.l1_associativity, self.config.l1_latency)
                 caches.append(cache)
+            cache_system_ticks = [self.dram] + caches
+        else:
+            print "MemorySystemFactory:"
+            print "Unknown cache_system '%s'." % self.config.cache_system
+            print "Choices: 'dram_only', 'l1'"
+            exit(1)
 
-        return MemorySystem(frontend, coalescer, caches, self.config.miss_queue_size, self.stats, core_idx)
+        return MemorySystem(frontend, coalescer, caches, self.config.miss_queue_size, self.stats, core_idx, cache_system_ticks)

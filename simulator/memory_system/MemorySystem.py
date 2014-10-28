@@ -12,7 +12,7 @@ def CreateMemorySystem(system_type):
         assert(False)
 
 class MemorySystem(object):
-    def __init__(self, frontend, coalescer, caches, miss_queue_size, stats, core_idx):
+    def __init__(self, frontend, coalescer, caches, miss_queue_size, stats, core_idx, cache_system_ticks):
         self.frontend = frontend
         self.coalescer = coalescer
         self.num_banks = len(caches)
@@ -22,8 +22,10 @@ class MemorySystem(object):
         self.stats = stats
         self.core_idx = core_idx
 
-        # We store these as a set so that tick() can call each unique cache once.
-        self.cache_set = set(caches)
+        # These are the memory system objects that need to be clocked each cycle.
+        #  The ticks are sent in order, so element 0 should be the farthest back,
+        #  and the last element should be the L1 cache.
+        self.cache_system_ticks = cache_system_ticks
 
     def can_accept(self):
         return self.frontend.canAccept()
@@ -51,9 +53,7 @@ class MemorySystem(object):
             if self.miss_queues[i].canIssue() and self.warp_reconstructors[i].canAccept():
                 self.warp_reconstructors[i].accept(self.miss_queues[i].issue())
 
-        # Cache is a set, so each unique object gets ticked once.
-        # XXX: this is probably not the way it should stay.
-        for cache in self.cache_set:
+        for cache in self.cache_system_ticks:
             cache.tick()
 
         for mq in self.miss_queues:
