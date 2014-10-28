@@ -1,11 +1,13 @@
 class MissQueue(object):
-    def __init__(self, size, cache):
+    def __init__(self, size, cache, stats, name):
         self.size = size
         self.cache = cache
         self.queue = [None for x in range(self.size)]
         self.future_events = {}
         self.cur_tick = 0
         self.ready_idxs = []
+        self.stats = stats
+        self.name = name
 
     def can_accept_line(self, line):
         hasSlot = False
@@ -19,6 +21,8 @@ class MissQueue(object):
     def accept(self, request):
         assert(self.can_accept_line(request.cache_line))
         latency = self.cache.accept(request.cache_line)
+        self.stats.increment(self.name + ".requests", 1)
+        self.stats.increment(self.name + ".total_latency", latency)
 
         idx = self.addToQueue(request)
         if latency == 0:

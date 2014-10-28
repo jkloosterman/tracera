@@ -34,7 +34,10 @@ class MemorySystemFactory(object):
             l1_bank_size = self.config.l1_size / self.config.num_banks
             caches = []
             for i in range(self.config.num_banks):
-                cache = Cache(self.dram, l1_bank_size, self.config.line_size, self.config.l1_associativity, self.config.l1_latency)
+                cache = Cache(
+                    self.dram, l1_bank_size, self.config.line_size,
+                    self.config.l1_associativity, self.config.l1_latency,
+                    self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 caches.append(cache)
             cache_system_ticks = [self.dram] + caches
         else:

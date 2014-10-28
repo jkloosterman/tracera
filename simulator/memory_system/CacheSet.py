@@ -1,5 +1,5 @@
 class CacheSet(object):
-    def __init__(self, mem_side, associativity, hit_latency):
+    def __init__(self, mem_side, associativity, hit_latency, stats, name):
         self.mem_side = mem_side
         self.associativity = associativity
         self.hit_latency = hit_latency
@@ -7,6 +7,8 @@ class CacheSet(object):
         self.future_events = {}
         self.cur_tick = 0
         self.mshrs = {}
+        self.stats = stats
+        self.name = name
         # TODO: limit requests per cycle
 
     def is_hit(self, line):
@@ -28,16 +30,19 @@ class CacheSet(object):
     def accept(self, line):
         hit_idx = self.is_hit(line)
         if hit_idx > -1:
+            self.stats.increment(self.name + ".hits", 1)
             self.lines.pop(hit_idx)
             self.lines.append(line)
             return self.hit_latency
 
         # A miss. Merge with request in MSHR
         if line in self.mshrs:
+            self.stats.increment(self.name + ".mshr_merges", 1)
             return self.mshrs[line] - self.cur_tick
 
         # Or launch a new mem-side request.
         if self.mem_side.can_accept_line(line):
+            self.stats.increment(self.name + ".misses", 1)
             latency = self.mem_side.accept(line)
 
             assert(latency > 0)

@@ -16,11 +16,16 @@ class MemorySystem(object):
         self.frontend = frontend
         self.coalescer = coalescer
         self.num_banks = len(caches)
-        self.miss_queues = [MissQueue(miss_queue_size, cache) for cache in caches]
-        self.warp_reconstructors = [WarpReconstructor() for x in range(self.num_banks)]
-        self.issue_rr = 0
         self.stats = stats
         self.core_idx = core_idx
+
+        self.miss_queues = []
+        for i in range(len(caches)):
+            mq = MissQueue(miss_queue_size, caches[i], self.stats, "core_%d.miss_queue_%d" % (self.core_idx, i))
+            self.miss_queues.append(mq)
+
+        self.warp_reconstructors = [WarpReconstructor() for x in range(self.num_banks)]
+        self.issue_rr = 0
 
         # These are the memory system objects that need to be clocked each cycle.
         #  The ticks are sent in order, so element 0 should be the farthest back,
