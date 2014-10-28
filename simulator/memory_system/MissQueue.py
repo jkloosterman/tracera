@@ -18,7 +18,7 @@ class MissQueue(object):
 
     def accept(self, request):
         assert(self.can_accept_line(request.cache_line))
-        latency = self.cache.accept(request)
+        latency = self.cache.accept(request.cache_line)
 
         idx = self.addToQueue(request)
         if latency == 0:
