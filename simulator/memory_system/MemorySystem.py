@@ -18,6 +18,7 @@ class MemorySystem(object):
         self.num_banks = len(caches)
         self.stats = stats
         self.core_idx = core_idx
+        self.name = "core_%d.memory_system" % core_idx
 
         self.miss_queues = []
         for i in range(len(caches)):
@@ -66,13 +67,13 @@ class MemorySystem(object):
 
         if self.frontend.canIssue():
             if self.coalescer.canAccept():
-                self.stats.increment_core(self.core_idx, "coalescer_accept_cycles", 1)
+                self.stats.increment(self.name + ".coalescer_accept_cycles", 1)
                 self.coalescer.accept(self.frontend.issue())
             else:
-                self.stats.increment_core(self.core_idx, "coalescer_stall_cycles", 1)
+                self.stats.increment(self.name + ".coalescer_stall_cycles", 1)
 
         if self.coalescer.canIssue():
-            self.stats.increment_core(self.core_idx, "coalescer_issue_cycles", 1)
+            self.stats.increment(self.name + ".coalescer_issue_cycles", 1)
             self.coalescer.issue(self.miss_queues)
 
     def dump(self):

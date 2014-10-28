@@ -9,6 +9,10 @@ class Stats(object):
         self.stats["store_instructions"] = 0
         self.stats["total_instructions"] = 0
 
+    def initialize(self, name):
+        if name not in self.stats:
+            self.stats[name] = 0
+
     def increment(self, name, amount):
         if name not in self.stats:
             self.stats[name] = amount

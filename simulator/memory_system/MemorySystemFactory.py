@@ -10,17 +10,22 @@ from coalescers.FullAssociativeOldestCoalescer import FullAssociativeOldestCoale
 class MemorySystemFactory(object):
     def __init__(self, config, stats):
         self.dram = Dram(config.dram_ports, config.dram_latency)
-        self.banking_policy = BankingPolicyConsecutive(config.num_banks, config.line_size)
         self.config = config
         self.stats = stats
 
     def createMemorySystem(self, core_idx):
         frontend = Frontend(self.config.mem_frontend_depth, self.config.warp_width, self.config.line_size)
 
+        if self.config.cache_system == 'dram_only':
+            associativity = 1
+        else:
+            associativity = self.config.l1_associativity
+        banking_policy = BankingPolicyConsecutive(self.config.num_banks, associativity, self.config.line_size)
+
         if self.config.coalescer == 'intra_warp':
-            coalescer = IntrawarpCoalescer(self.banking_policy)
+            coalescer = IntrawarpCoalescer(banking_policy)
         elif self.config.coalescer == 'full_associative_oldest':
-            coalescer = FullAssociativeOldestCoalescer(self.banking_policy, 8)
+            coalescer = FullAssociativeOldestCoalescer(banking_policy, 8)
         else:
             print "MemorySystemFactory:"
             print "Unknown coalescer type '%s'." % self.config.coalescer

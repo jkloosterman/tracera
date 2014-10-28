@@ -9,6 +9,10 @@ class CacheSet(object):
         self.mshrs = {}
         self.stats = stats
         self.name = name
+
+        self.stats.initialize(self.name + ".hits")
+        self.stats.initialize(self.name + ".mshr_merges")
+        self.stats.initialize(self.name + ".misses")
         # TODO: limit requests per cycle
 
     def is_hit(self, line):

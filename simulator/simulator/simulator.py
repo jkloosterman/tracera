@@ -17,6 +17,7 @@ class Simulator(object):
             self.cores.append(core)
 
         self.num_cycles = 0
+        self.stats.initialize("num_cycles")
 
     # from http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks-in-python
     def chunks(self, l, n):

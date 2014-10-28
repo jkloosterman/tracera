@@ -30,6 +30,17 @@ class Scoreboard(object):
         #   request is split.
         self.completes = [1 for x in range(warp_width)]
 
+        # Initialize stats
+        self.stats.initialize("int_instructions")
+        self.stats.initialize("int_accesses")
+        self.stats.initialize("fp_instructions")
+        self.stats.initialize("fp_accesses")
+        self.stats.initialize("store_instructions")
+        self.stats.initialize("store_accesses")
+        self.stats.initialize("load_instructions")
+        self.stats.initialize("load_accesses")
+
+
     def update(self):
         # This is slow. To make it faster, replace the arrays with
         #  bitsets or integers.

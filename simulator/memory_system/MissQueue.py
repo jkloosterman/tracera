@@ -8,6 +8,9 @@ class MissQueue(object):
         self.ready_idxs = []
         self.stats = stats
         self.name = name
+        self.stats.initialize(self.name + ".requests")
+        self.stats.initialize(self.name + ".total_latency")
+
 
     def can_accept_line(self, line):
         hasSlot = False
