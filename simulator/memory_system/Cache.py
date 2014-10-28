@@ -13,6 +13,7 @@ class Cache(object):
         self.sets = []
         for i in range(self.num_sets):
             self.sets.append(CacheSet(mem_side, associativity, hit_latency))
+        # TODO: limit requests per cycle
 
     def set_for_line(self, line):
         set_idx = (line >> self.line_bits) & (self.num_sets - 1)

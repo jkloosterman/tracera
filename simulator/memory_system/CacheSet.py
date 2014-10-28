@@ -7,6 +7,7 @@ class CacheSet(object):
         self.future_events = {}
         self.cur_tick = 0
         self.mshrs = {}
+        # TODO: limit requests per cycle
 
     def is_hit(self, line):
         hit_idx = -1
@@ -55,10 +56,10 @@ class CacheSet(object):
     def tick(self):
         self.cur_tick += 1
 
-        if len(self.future_events) > 0:
-            print "Cache set:"
-            print "Cur_tick:", self.cur_tick
-            print "Future events: ", self.future_events
+#        if len(self.future_events) > 0:
+#            print "Cache set:"
+#            print "Cur_tick:", self.cur_tick
+#            print "Future events: ", self.future_events
 
         if self.cur_tick in self.future_events:
             lines = self.future_events[self.cur_tick]

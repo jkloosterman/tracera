@@ -11,6 +11,7 @@ import json
 import tempfile
 import shutil
 import os
+import time
 
 from memory_system.MemorySystemFactory import MemorySystemFactory
 from warp_assembly.warp_assembly import *
@@ -43,6 +44,34 @@ def dump_config_csv(config, fp):
     for param in config_params:
         fp.write("%s\t" % str(getattr(config, param)))
 
+def atomic_copy(src, dest, lockfile):
+    proceed = False
+    while not proceed:
+        if os.path.exists(dest):
+            if os.path.exists(lockfile):
+                print "atomic_copy: waiting for copy of", dest, "to finish."
+                time.sleep(5)
+            else:
+                print "atomic_copy:", dest, "ready"
+                proceed = True
+        else:
+            try:
+                print "atomic_copy: taking copy lock for", dest
+                # Try taking the lock.
+                fd = os.open(lockfile, os.O_CREAT | os.O_EXCL)
+
+                # Perform the copy
+                shutil.copy(src, dest)
+
+                # Close the lock file
+                os.close(fd)
+                # And delete it.
+                shutil.remove(lockfile)
+                proceed = True
+            except:
+                print "atomic_copy: lost race for copy lock for", dest
+                time.sleep(5)
+
 def main():
     if len(sys.argv) != 2:
         print "simulator.py <config file>"
@@ -57,10 +86,14 @@ def main():
     warp_width = config.warp_width
 
     if config.on_simpool:
-        local_filename = tempfile.mktemp(dir="/tmp")
-        print "Copying sqlite file to", local_filename
-        shutil.copy(sqlite_file, local_filename)
-        print "Done."
+        sqlite_file_no_path = os.path.basename(sqlite_file)
+        local_filename = os.path.join("/tmp", sqlite_file_no_path)
+        lock_file_no_path = sqlite_file_no_path + ".lock"
+        lock_filename = os.path.join("/tmp", lock_file_no_path)
+
+        print "atomic copy of %s to %s, lockfile %s" % (sqlite_file, local_filename, lock_filename)
+        atomic_copy(sqlite_file, local_filename, lock_filename)
+        print "copy done."
     else:
         local_filename = sqlite_file
 
