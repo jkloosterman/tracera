@@ -40,9 +40,14 @@ config_params = [
     "miss_queue_size",
     "coalescer"
 ]
+
 def dump_config_csv(config, fp):
     for param in config_params:
         fp.write("%s\t" % str(getattr(config, param)))
+
+def dump_config_csv_headers(config, fp):
+    for param in config_params:
+        fp.write("%s\t" % param)
 
 def atomic_copy(src, dest, lockfile):
     proceed = False
@@ -110,7 +115,11 @@ def main():
 
     # Dump data for reproduceability
     with open(config.output_file, "w") as fp:
+        dump_config_csv_headers(config, fp)
+        stats.dump_csv_headers(fp)
+        fp.write("\n")
+
         dump_config_csv(config, fp)
-        fp.write("%d\n" % num_cycles)
+        stats.dump_csv(fp)
 
 main()

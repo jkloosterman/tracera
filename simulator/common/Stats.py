@@ -34,3 +34,16 @@ class Stats(object):
             else:
                 print "%s\t%d" % (key, self.stats[key])
 
+    def dump_csv_headers(self, fp):
+        for key in sorted(self.stats):
+            fp.write("%s\t" % key)
+
+    def dump_csv(self, fp):
+        for key in sorted(self.stats):
+            if key == "ipc":
+                fp.write("%.2f" % self.stats[key])
+            else:
+                fp.write("%d" % self.stats[key])
+            fp.write("\t")
+        
+    
