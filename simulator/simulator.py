@@ -107,8 +107,6 @@ def main():
     num_cycles = simulator.simulate()
 
     db.close()
-    if config.on_simpool:
-        os.remove(local_filename)
 
     # Dump data for reproduceability
     with open(config.output_file, "w") as fp:
