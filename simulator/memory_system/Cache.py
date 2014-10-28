@@ -9,6 +9,7 @@ class Cache(object):
         self.line_bits = int(math.log(self.line_size, 2))
         self.stats = stats
         self.name = name
+        self.active_sets = set()
 
         assert(self.num_sets > 0)
 
@@ -19,6 +20,7 @@ class Cache(object):
 
     def set_for_line(self, line):
         set_idx = (line >> self.line_bits) & (self.num_sets - 1)
+        self.active_sets.add(set_idx)
 #        print set_idx, "of", self.num_sets
         return self.sets[set_idx]
 
@@ -29,5 +31,5 @@ class Cache(object):
         return self.set_for_line(line).accept(line)
 
     def tick(self):
-        for cache_set in self.sets:
-            cache_set.tick()
+        for set_idx in self.active_sets:
+            self.sets[set_idx].tick()

@@ -11,15 +11,19 @@ class Config:
 	self.line_size = 64
 	self.mem_frontend_depth = 1
 
-	self.dram_latency = 10
+	self.dram_latency = 50
         self.dram_ports = 4
 
 #        self.cache_system = 'dram_only'
 
-        self.cache_system = 'l1'
+        self.cache_system = 'l2'
         self.l1_size = 16384
         self.l1_associativity = 4
         self.l1_latency = 1
+
+        self.l2_size = 4194304
+        self.l2_associativity = 4
+        self.l2_latency = 10
 
 	self.miss_queue_size = 50
 	self.output_file = 'out/tau.csv'

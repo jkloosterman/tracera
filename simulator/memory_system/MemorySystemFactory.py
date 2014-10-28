@@ -28,22 +28,37 @@ class MemorySystemFactory(object):
             exit(1)
 
         if self.config.cache_system == 'dram_only':
-            caches = [self.dram for i in range(self.config.num_banks)]
+            banks = [self.dram for i in range(self.config.num_banks)]
             cache_system_ticks = [self.dram]
         elif self.config.cache_system == 'l1':
             l1_bank_size = self.config.l1_size / self.config.num_banks
-            caches = []
+            banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
                     self.dram, l1_bank_size, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
-                caches.append(cache)
-            cache_system_ticks = [self.dram] + caches
+                banks.append(cache)
+            cache_system_ticks = [self.dram] + banks
+        elif self.config.cache_system == 'l2':
+            l2 = Cache(
+                self.dram, self.config.l2_size, self.config.line_size,
+                self.config.l2_associativity, self.config.l2_latency,
+                self.stats, "core_%d.l2" % core_idx)
+
+            l1_bank_size = self.config.l1_size / self.config.num_banks
+            banks = []
+            for i in range(self.config.num_banks):
+                cache = Cache(
+                    l2, l1_bank_size, self.config.line_size,
+                    self.config.l1_associativity, self.config.l1_latency,
+                    self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
+                banks.append(cache)
+            cache_system_ticks = [self.dram, l2] + banks
         else:
             print "MemorySystemFactory:"
             print "Unknown cache_system '%s'." % self.config.cache_system
-            print "Choices: 'dram_only', 'l1'"
+            print "Choices: 'dram_only', 'l1', 'l2'"
             exit(1)
 
-        return MemorySystem(frontend, coalescer, caches, self.config.miss_queue_size, self.stats, core_idx, cache_system_ticks)
+        return MemorySystem(frontend, coalescer, banks, self.config.miss_queue_size, self.stats, core_idx, cache_system_ticks)

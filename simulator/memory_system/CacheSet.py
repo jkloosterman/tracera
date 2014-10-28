@@ -66,7 +66,7 @@ class CacheSet(object):
 #            print "Cur_tick:", self.cur_tick
 #            print "Future events: ", self.future_events
 
-        if self.cur_tick in self.future_events:
+        if len(self.future_events) > 0 and self.cur_tick in self.future_events:
             lines = self.future_events[self.cur_tick]
             del self.future_events[self.cur_tick]
 
