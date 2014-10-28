@@ -16,32 +16,33 @@ class FullAssociativeCoalescer(Coalescer):
     def canIssue(self):
         return len(self.request_deque) > 0
 
-    def coalesce_all(self, request):
-        # Do a first scan to find any stores to the line.
+    def coalesce_all(self, request, lane, idx):
+        # Do a first scan to find any stores to the line in the thread.
         # We can only coalesce requests that come before
-        #  the store in the deque.
+        #  the store in the thread.
         store_idx = -1
-        for i, warp in enumerate(self.request_deque):
-            for r in warp:
-                if r is None:
-                    continue
-                if r.cache_line != request.cache_line:
-                    continue
-                if r.access_type == "S":
-                    store_idx = i
-                    break
-            if store_idx >= 0:
-                break
+        if request.access_type == "S":
+            store_idx = idx
+        else:
+            for i, warp in enumerate(self.request_deque):
+                if len(warp) > lane:
+                    if warp[lane] is None:
+                        continue
+                    if warp[lane].cache_line != request.cache_line:
+                        continue
+                    if warp[lane].access_type == "S":
+                        store_idx = i
+                        break
 
         num_coalesces = 0
         for warp_idx, warp in enumerate(self.request_deque):
-            # Don't coalesce past stores
-            if store_idx >= 0 and warp_idx > store_idx:
-                break
             for i in range(len(warp)):
+                # Don't coalesce past stores in the same thread
+                if store_idx >= 0 and warp_idx > store_idx and i == lane:
+                    continue
                 if warp[i] is None:
                     continue
-                if warp[i].cache_line == request.cache_line:
+                if warp[i].cache_line == request.cache_line and warp[i].access_type == request.access_type:
                     request.merge(warp[i])
                     warp[i] = None
                     num_coalesces += 1
@@ -58,12 +59,16 @@ class FullAssociativeCoalescer(Coalescer):
             # Since the oldest warps are on top of the deque, this means
             #  old requests will be issued before new ones.
             first_request = None
-            for warp in self.request_deque:
+            first_request_lane = 0
+            first_requets_idx = 0
+            for warp_idx, warp in enumerate(self.request_deque):
                 for j in range(len(warp)):
                     if warp[j] is None:
                         continue
                     if self.banking_policy.bank(warp[j].cache_line) == i and bank_caches[i].can_accept_line(warp[j].cache_line):
                         first_request = warp[j]
+                        first_request_lane = j
+                        first_request_idx = warp_idx
                         warp[j] = None
                         break
                 if first_request is not None:
@@ -74,7 +79,7 @@ class FullAssociativeCoalescer(Coalescer):
                 continue
 
             # Otherwise coalesce with all other requests to that line.
-            self.coalesce_all(first_request)
+            self.coalesce_all(first_request, first_request_lane, first_request_idx)
 
             # Send the request off to the bank.
             bank_caches[i].accept(first_request)
