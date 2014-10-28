@@ -30,7 +30,9 @@ class Config:
         self.on_simpool = True
 
 #       self.coalescer = 'intra_warp'
-        self.coalescer = 'full_associative_oldest'
+#        self.coalescer = 'full_associative'
+        self.coalescer = 'uncover'
+        self.coalescer_depth = 8
 
         self.pipelines = [
             { "width": 16, "type": "I", "stages": 2 },

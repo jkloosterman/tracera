@@ -5,7 +5,8 @@ from BankingPolicy import BankingPolicyConsecutive
 from MemorySystem import MemorySystem
 from Cache import Cache
 from coalescers.IntrawarpCoalescer import IntrawarpCoalescer
-from coalescers.FullAssociativeOldestCoalescer import FullAssociativeOldestCoalescer
+from coalescers.FullAssociativeCoalescer import FullAssociativeCoalescer
+from coalescers.UncoverCoalescer import UncoverCoalescer
 
 class MemorySystemFactory(object):
     def __init__(self, config, stats):
@@ -24,12 +25,14 @@ class MemorySystemFactory(object):
 
         if self.config.coalescer == 'intra_warp':
             coalescer = IntrawarpCoalescer(banking_policy)
-        elif self.config.coalescer == 'full_associative_oldest':
-            coalescer = FullAssociativeOldestCoalescer(banking_policy, 8)
+        elif self.config.coalescer == 'full_associative':
+            coalescer = FullAssociativeCoalescer(banking_policy, self.config.coalescer_depth)
+        elif self.config.coalescer == 'uncover':
+            coalescer = UncoverCoalescer(banking_policy, self.config.coalescer_depth)
         else:
             print "MemorySystemFactory:"
             print "Unknown coalescer type '%s'." % self.config.coalescer
-            print "Choices: 'intra_warp', 'full_associative_oldest'"
+            print "Choices: 'intra_warp', 'full_associative', 'uncover'"
             exit(1)
 
         if self.config.cache_system == 'dram_only':

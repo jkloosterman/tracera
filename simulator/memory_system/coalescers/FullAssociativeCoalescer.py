@@ -1,7 +1,7 @@
 from Coalescer import Coalescer
 
 # Dispatch the oldest request to each warp.
-class FullAssociativeOldestCoalescer(Coalescer):
+class FullAssociativeCoalescer(Coalescer):
     def __init__(self, banking_policy, depth):
         super(FullAssociativeOldestCoalescer, self).__init__(banking_policy)
         self.depth = depth

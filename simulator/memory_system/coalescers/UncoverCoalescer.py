@@ -53,7 +53,9 @@ class UncoverCoalescer(Coalescer):
             for lane in range(max_width):
                 for idx, warp in enumerate(self.request_deque):
                     if lane < len(warp) and warp[lane] is not None:
-                        if self.banking_policy.bank(warp[lane].cache_line) == bank and (idx < first_idx) and bank_caches[bank].can_accept_line(warp[lane].cache_line):
+                        if self.banking_policy.bank(warp[lane].cache_line) == bank \
+                                and (idx < first_idx) \
+                                and bank_caches[bank].can_accept_line(warp[lane].cache_line):
                             first_request = warp[lane]
                             first_lane = lane
                             first_idx = idx
