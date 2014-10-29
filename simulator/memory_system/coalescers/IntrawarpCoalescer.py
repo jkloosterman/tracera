@@ -45,7 +45,7 @@ class IntrawarpCoalescer(Coalescer):
         for i in range(len(bank_caches)):
             if i not in self.bank_reqs:
                 continue
-            if not bank_caches[i].can_accept_line(self.bank_reqs[i][-1]):
+            if not bank_caches[i].can_accept_line(self.bank_reqs[i][-1].cache_line):
                 continue
             
             bank_caches[i].accept(self.bank_reqs[i].pop())

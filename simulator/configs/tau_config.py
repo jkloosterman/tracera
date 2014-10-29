@@ -16,7 +16,7 @@ class Config:
 
 #        self.cache_system = 'dram_only'
 
-        self.cache_system = 'l2'
+        self.cache_system = 'l1'
         self.l1_size = 16384
         self.l1_associativity = 4
         self.l1_latency = 1
@@ -29,9 +29,9 @@ class Config:
 	self.output_file = 'out/tau.csv'
         self.on_simpool = True
 
-#       self.coalescer = 'intra_warp'
+        self.coalescer = 'intra_warp'
 #        self.coalescer = 'full_associative'
-        self.coalescer = 'uncover'
+#        self.coalescer = 'uncover'
         self.coalescer_depth = 8
 
         self.pipelines = [
