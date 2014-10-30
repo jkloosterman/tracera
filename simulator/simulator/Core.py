@@ -22,7 +22,9 @@ class Core(object):
 
         # Initialize pipelines
         self.initialize_pipelines(memory_system_factory, config)
-        self.scheduler = WarpSchedulerRR(self.scoreboards, self.register_read_pipelines, config.issue_width)
+        self.scheduler = WarpSchedulerRR(
+            self.scoreboards, self.register_read_pipelines, config.issue_width,
+            "core_%d" % core_idx, stats)
 
     def initialize_pipelines(self, memory_system_factory, config):
         self.register_read_pipelines = []

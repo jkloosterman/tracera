@@ -9,10 +9,23 @@ class WarpSchedulerOutput(object):
         raise NotImplementedError()
 
 class WarpScheduler(object):
-    def __init__(self, scoreboards, outputs, issue_width):
+    def __init__(self, scoreboards, outputs, issue_width, name, stats):
         self.scoreboards = scoreboards
         self.outputs = outputs
         self.issue_width = issue_width
+        self.name = name
+        self.stats = stats
+        self.stats.initialize(name + ".ip_delta")
+
+    def increment_stats(self):
+        ip_set = set([x.ip for x in self.scoreboards if x is not None and x.ip >= 0])
+        ips = list(ip_set)
+        ips.sort()
+
+        delta = 0
+        for i in range(1, len(ips)):
+            delta += ips[i] - ips[i-1]
+        self.stats.increment(self.name + ".scheduler.ip_delta", delta)
 
     def accepting_outputs(self):
         for output in self.outputs:
@@ -35,8 +48,8 @@ class WarpScheduler(object):
         output.accept(w)
 
 class WarpSchedulerRR(WarpScheduler):
-    def __init__(self, scoreboards, outputs, issue_width):
-        super(WarpSchedulerRR, self).__init__(scoreboards, outputs, issue_width)
+    def __init__(self, scoreboards, outputs, issue_width, name, stats):
+        super(WarpSchedulerRR, self).__init__(scoreboards, outputs, issue_width, name, stats)
         self.curScoreboard = 0
 
     def schedule(self):
@@ -55,3 +68,16 @@ class WarpSchedulerRR(WarpScheduler):
 
             self.curScoreboard = (self.curScoreboard + 1) % len(self.scoreboards)
             attempted_issue += 1
+
+        self.increment_stats()
+
+class WarpSchedulerGTO(WarpScheduler):
+    def __init__(self, scoreboards, outputs, issue_width):
+        super(WarpSchedulerRR, self).__init__(scoreboards, outputs, issue_width)
+
+        # Different schedulers for each issue width, per Ankit.
+        #  So scheduler index n handles all the warps such that warp_idx mod n == 0.
+        self.greedy_warps = []
+
+    def schedule(self):
+        pass
