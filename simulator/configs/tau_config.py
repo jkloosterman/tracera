@@ -7,7 +7,7 @@ class Config:
 	self.warp_width = 32
 	self.num_active_warps = 8
 	self.issue_width = 2
-	self.num_banks = 4
+	self.num_banks = 1
 	self.line_size = 64
 	self.mem_frontend_depth = 1
 
@@ -29,9 +29,10 @@ class Config:
 	self.output_file = 'out/tau.csv'
         self.on_simpool = True
 
-        self.coalescer = 'intra_warp'
+#        self.coalescer = 'intra_warp'
 #        self.coalescer = 'full_associative'
 #        self.coalescer = 'uncover'
+        self.coalescer = 'greedy'
         self.coalescer_depth = 8
 
         self.pipelines = [

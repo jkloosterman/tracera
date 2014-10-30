@@ -15,7 +15,7 @@ class WarpScheduler(object):
         self.issue_width = issue_width
         self.name = name
         self.stats = stats
-        self.stats.initialize(name + ".ip_delta")
+        self.stats.initialize(name + ".scheduler.ip_delta")
 
     def increment_stats(self):
         ip_set = set([x.ip for x in self.scoreboards if x is not None and x.ip >= 0])

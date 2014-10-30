@@ -2,8 +2,8 @@ from Coalescer import Coalescer
 
 # Dispatch the oldest request to each warp.
 class UncoverCoalescer(Coalescer):
-    def __init__(self, banking_policy, depth):
-        super(UncoverCoalescer, self).__init__(banking_policy)
+    def __init__(self, banking_policy, depth, name, stats):
+        super(UncoverCoalescer, self).__init__(banking_policy, name, stats)
         self.depth = depth
         self.request_deque = []
 

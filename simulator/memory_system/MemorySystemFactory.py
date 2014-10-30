@@ -7,6 +7,7 @@ from Cache import Cache
 from coalescers.IntrawarpCoalescer import IntrawarpCoalescer
 from coalescers.FullAssociativeCoalescer import FullAssociativeCoalescer
 from coalescers.UncoverCoalescer import UncoverCoalescer
+from coalescers.GreedyCoalescer import GreedyCoalescer
 
 class MemorySystemFactory(object):
     def __init__(self, config, stats):
@@ -23,12 +24,15 @@ class MemorySystemFactory(object):
             associativity = self.config.l1_associativity
         banking_policy = BankingPolicyConsecutive(self.config.num_banks, associativity, self.config.line_size)
 
+        core_name = "core_%d" % core_idx
         if self.config.coalescer == 'intra_warp':
-            coalescer = IntrawarpCoalescer(banking_policy)
+            coalescer = IntrawarpCoalescer(banking_policy, core_name, self.stats)
         elif self.config.coalescer == 'full_associative':
-            coalescer = FullAssociativeCoalescer(banking_policy, self.config.coalescer_depth)
+            coalescer = FullAssociativeCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         elif self.config.coalescer == 'uncover':
-            coalescer = UncoverCoalescer(banking_policy, self.config.coalescer_depth)
+            coalescer = UncoverCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
+        elif self.config.coalescer == 'greedy':
+            coalescer = GreedyCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         else:
             print "MemorySystemFactory:"
             print "Unknown coalescer type '%s'." % self.config.coalescer

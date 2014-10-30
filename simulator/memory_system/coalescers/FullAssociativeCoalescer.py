@@ -2,8 +2,8 @@ from Coalescer import Coalescer
 
 # Dispatch the oldest request to each warp.
 class FullAssociativeCoalescer(Coalescer):
-    def __init__(self, banking_policy, depth):
-        super(FullAssociativeCoalescer, self).__init__(banking_policy)
+    def __init__(self, banking_policy, depth, name, stats):
+        super(FullAssociativeCoalescer, self).__init__(banking_policy, name, stats)
         self.depth = depth
         self.request_deque = []
 
@@ -60,7 +60,7 @@ class FullAssociativeCoalescer(Coalescer):
             #  old requests will be issued before new ones.
             first_request = None
             first_request_lane = 0
-            first_requets_idx = 0
+            first_request_idx = 0
             for warp_idx, warp in enumerate(self.request_deque):
                 for j in range(len(warp)):
                     if warp[j] is None:

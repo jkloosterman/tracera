@@ -1,8 +1,8 @@
 from Coalescer import Coalescer
 
 class IntrawarpCoalescer(Coalescer):
-    def __init__(self, banking_policy):
-        super(IntrawarpCoalescer, self).__init__(banking_policy)
+    def __init__(self, banking_policy, name, stats):
+        super(IntrawarpCoalescer, self).__init__(banking_policy, name, stats)
         self.bank_reqs = {}
 
     def canAccept(self):
