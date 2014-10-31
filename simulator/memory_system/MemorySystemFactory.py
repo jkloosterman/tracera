@@ -22,7 +22,7 @@ class MemorySystemFactory(object):
             associativity = 1
         else:
             associativity = self.config.l1_associativity
-        banking_policy = BankingPolicyConsecutive(self.config.num_banks, associativity, self.config.line_size)
+        banking_policy = BankingPolicyConsecutive(self.config.num_banks, self.config.line_size)
 
         core_name = "core_%d" % core_idx
         if self.config.coalescer == 'intra_warp':
