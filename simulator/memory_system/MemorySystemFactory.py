@@ -47,14 +47,14 @@ class MemorySystemFactory(object):
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
-                    self.dram, l1_bank_size, self.config.line_size,
+                    self.dram, l1_bank_size, self.config.num_banks, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
             cache_system_ticks = [self.dram] + banks
         elif self.config.cache_system == 'l2':
             l2 = Cache(
-                self.dram, self.config.l2_size, self.config.line_size,
+                self.dram, self.config.l2_size, 1, self.config.line_size,
                 self.config.l2_associativity, self.config.l2_latency,
                 self.stats, "core_%d.l2" % core_idx)
 
@@ -62,7 +62,7 @@ class MemorySystemFactory(object):
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
-                    l2, l1_bank_size, self.config.line_size,
+                    l2, l1_bank_size, self.config.num_banks, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)

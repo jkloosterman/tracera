@@ -2,9 +2,11 @@ from CacheSet import CacheSet
 import math
 
 class Cache(object):
-    def __init__(self, mem_side, size_in_bytes, line_size, associativity, hit_latency, stats, name):
+    def __init__(self, mem_side, size_in_bytes, num_banks, line_size, associativity, hit_latency, stats, name):
         self.num_lines = size_in_bytes / line_size
         self.num_sets = self.num_lines / associativity
+        self.num_banks = num_banks
+        self.bank_bits = int(math.log(self.num_banks, 2))
         self.line_size = line_size
         self.line_bits = int(math.log(self.line_size, 2))
         self.stats = stats
@@ -19,7 +21,7 @@ class Cache(object):
         # TODO: limit requests per cycle
 
     def set_for_line(self, line):
-        set_idx = (line >> self.line_bits) & (self.num_sets - 1)
+        set_idx = (line >> (self.line_bits + self.bank_bits)) & (self.num_sets - 1)
         self.active_sets.add(set_idx)
 #        print set_idx, "of", self.num_sets
         return self.sets[set_idx]
