@@ -34,6 +34,8 @@ class BankingPolicyConsecutive(BankingPolicy):
 class BankingPolicyChineseRemainder(BankingPolicy):
     def __init__(self, num_banks, line_size):
         assert(self.is_power2(line_size))
+        assert(not self.is_power2(num_banks))
+
         self.num_banks = num_banks
         self.line_bits = int(math.log(line_size, 2))
 
