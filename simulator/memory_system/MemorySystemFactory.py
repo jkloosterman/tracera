@@ -1,7 +1,7 @@
 from MemorySystem import MemorySystem
 from Dram import Dram
 from Frontend import Frontend
-from BankingPolicy import BankingPolicyConsecutive
+from BankingPolicy import *
 from MemorySystem import MemorySystem
 from Cache import Cache
 from coalescers.IntrawarpCoalescer import IntrawarpCoalescer
@@ -22,7 +22,15 @@ class MemorySystemFactory(object):
             associativity = 1
         else:
             associativity = self.config.l1_associativity
-        banking_policy = BankingPolicyConsecutive(self.config.num_banks, self.config.line_size)
+ 
+        if self.config.banking_policy == 'consecutive':
+            banking_policy = BankingPolicyConsecutive(self.config.num_banks, self.config.line_size)
+            cache_num_banks = self.config.num_banks
+        elif self.config.banking_policy == 'chinese_remainder':
+            banking_policy = BankingPolicyChineseRemainder(self.config.num_banks, self.config.line_size)
+            cache_num_banks = 1
+        else:
+            assert(false)
 
         core_name = "core_%d" % core_idx
         if self.config.coalescer == 'intra_warp':
@@ -47,7 +55,7 @@ class MemorySystemFactory(object):
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
-                    self.dram, l1_bank_size, self.config.num_banks, self.config.line_size,
+                    self.dram, l1_bank_size, cache_num_banks, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
@@ -62,7 +70,7 @@ class MemorySystemFactory(object):
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
-                    l2, l1_bank_size, self.config.num_banks, self.config.line_size,
+                    l2, l1_bank_size, cache_num_banks, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
