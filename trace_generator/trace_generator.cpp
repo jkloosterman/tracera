@@ -93,7 +93,7 @@ VOID TraceHooks(TRACE trace, VOID *v)
 
 	    UINT32 memOperands = INS_MemoryOperandCount(ins);
 	    // Iterate over each memory operand of the instruction.
-	    if (!INS_IsStackRead(ins))
+	    if (true /*!INS_IsStackRead(ins) */)
 	    {
 		for (UINT32 memOp = 0; memOp < memOperands; memOp++)
 		{
@@ -115,7 +115,7 @@ VOID TraceHooks(TRACE trace, VOID *v)
 
 	    bbInstructions.addInstruction(ins);
 
-	    if (!INS_IsStackWrite(ins))
+	    if (true /* !INS_IsStackWrite(ins) */)
 	    {
 		for (UINT32 memOp = 0; memOp < memOperands; memOp++)
 		{
