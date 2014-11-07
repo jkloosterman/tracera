@@ -24,15 +24,14 @@ class NVidiaRequest(object):
         return False
 
 class NVidiaCoalescer(object):
-    def __init__(self, line_size, num_banks, miss_queue):
-        self.miss_queue = miss_queue
+    def __init__(self, line_size, num_banks):
         self.bytes_per_bank = line_size / num_banks
         self.queue_size = 1
         self.line_size = line_size
         self.num_banks = num_banks
         self.n_requests = []
 
-    def can_accept(self):
+    def canAccept(self):
         return len(self.n_requests) < self.queue_size
 
     def accept(self, requests):
@@ -40,6 +39,8 @@ class NVidiaCoalescer(object):
         # Group requests by cache line
         lines = {}
         for request in requests:
+            if request is None:
+                continue
             if request.cache_line not in lines:
                 lines[request.cache_line] = []
             lines[request.cache_line].append(request)
@@ -47,7 +48,7 @@ class NVidiaCoalescer(object):
         # For each cache line, see which words need
         #  to be read.
         for line, request_list in lines.iteritems():
-            words = [False for x in range(num_banks)]
+            words = [False for x in range(self.num_banks)]
             for i in range(self.num_banks):
                 min_address = line + (self.bytes_per_bank * i)
                 max_address = line + (self.bytes_per_bank * (i + 1))
@@ -64,32 +65,35 @@ class NVidiaCoalescer(object):
             for i in range(1, len(request_list)):
                 merged_request.merge(request_list[i])
 
-            n_request = NVidiaRequest(words, merged_request)
+            n_request = NVidiaRequest(merged_request, words)
             self.n_requests.append(n_request)
 
-    def can_issue(self):
+    def canIssue(self):
         return len(self.n_requests) > 0
 
-    # Unlike the other coalescers, this returns a set of accesses
-    #  that will go to one bank. The method has a different name
-    #  to show it has different semantics.
-    def nvidia_issue(self):
-        assert(self.can_issue())
-        issue = [self.n_requests.pop(0)]
+    def issue(self, bank_caches):
+        assert(self.canIssue())
+        assert(len(bank_caches) == 1 and "nVidia coalescer requires one bank.")
+        
+        if not bank_caches[0].can_accept_line(self.n_requests[0].request.cache_line):
+            return
+        issued = [self.n_requests[0]]
+        bank_caches[0].accept(self.n_requests.pop(0).request)
 
         # Within a line, we're guaranteed no bank conflicts.
         # We can do as many lines in the queue, in order,
         #  until there are no bank conflicts.
-        while len(self.n_requests):
+        while len(self.n_requests) > 0 and bank_caches[0].can_accept_line(self.n_requests[0].request.cache_line):
             can_issue = True
-            for req in issue:
+
+            # Check for bank conflicts with already-issued requests
+            for req in issued:
                 if req.is_bank_conflict(self.n_requests[0]):
                     can_issue = False
                     break
 
             if can_issue:
-                issue.append(self.n_requests.pop(0))
+                issued.append(self.n_requests[0])
+                bank_caches[0].accept(self.n_requests.pop(0).request)
             else:
                 break
-            
-        return [x.request for x in issue]

@@ -8,6 +8,7 @@ from coalescers.IntrawarpCoalescer import IntrawarpCoalescer
 from coalescers.FullAssociativeCoalescer import FullAssociativeCoalescer
 from coalescers.UncoverCoalescer import UncoverCoalescer
 from coalescers.GreedyCoalescer import GreedyCoalescer
+from coalescers.NVidiaCoalescer import NVidiaCoalescer
 
 class MemorySystemFactory(object):
     def __init__(self, config, stats):
@@ -41,10 +42,12 @@ class MemorySystemFactory(object):
             coalescer = UncoverCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         elif self.config.coalescer == 'greedy':
             coalescer = GreedyCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
+        elif self.config.coalescer == 'nvidia':
+            coalescer = NVidiaCoalescer(self.config.line_size, self.config.line_size / 4)
         else:
             print "MemorySystemFactory:"
             print "Unknown coalescer type '%s'." % self.config.coalescer
-            print "Choices: 'intra_warp', 'full_associative', 'uncover'"
+            print "Choices: 'intra_warp', 'full_associative', 'uncover', 'nvidia'"
             exit(1)
 
         if self.config.cache_system == 'dram_only':
