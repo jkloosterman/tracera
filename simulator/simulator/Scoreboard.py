@@ -197,4 +197,4 @@ class Scoreboard(object):
         print "IP: ", self.ip
         print "issued_threads: ", self.issued_threads
         print "to_issue_threads: ", self.to_issue_threads
-        print "completed_threads: ", self.completed_threads
+        print "completes: ", self.completes

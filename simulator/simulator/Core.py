@@ -139,5 +139,5 @@ class Core(object):
 #            self.dump()
 #            exit(1)
 
-#        self.dump()
+        # self.dump()
         self.tick_count += 1

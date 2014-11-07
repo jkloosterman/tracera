@@ -23,6 +23,13 @@ class NVidiaRequest(object):
                 return True
         return False
 
+    def __repr__(self):
+        count = 0
+        for word in self.words:
+            if word:
+                count += 1
+        return str(self.request.cache_line) + ": " + str(count)
+
 class NVidiaCoalescer(object):
     def __init__(self, line_size, num_banks):
         self.bytes_per_bank = line_size / num_banks
@@ -97,3 +104,7 @@ class NVidiaCoalescer(object):
                 bank_caches[0].accept(self.n_requests.pop(0).request)
             else:
                 break
+            
+    def dump(self):
+        print "Nvidia coalescer:"
+        print self.n_requests
