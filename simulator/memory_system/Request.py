@@ -27,6 +27,8 @@ class Request(object):
             ret.append(bs_1[i] or bs_2[i])
         return ret
 
+    # Note that this doesn't merge the address and size
+    #  fields. No memory system needs that currently.
     def merge(self, other):
         for other_warp in other.requesters:
             found = None

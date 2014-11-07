@@ -11,7 +11,6 @@ class MissQueue(object):
         self.stats.initialize(self.name + ".requests")
         self.stats.initialize(self.name + ".total_latency")
 
-
     def can_accept_line(self, line):
         hasSlot = False
         for q in self.queue:
