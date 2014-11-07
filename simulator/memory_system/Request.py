@@ -7,8 +7,10 @@
 #   (base, size, <warp info>)
 
 class Request(object):
-    def __init__(self, cache_line, access_type):
+    def __init__(self, cache_line, address, size, access_type):
         self.cache_line = cache_line
+        self.address = address
+        self.size = size
         self.access_type = access_type
         self.requesters = []
         self.has_memory = False

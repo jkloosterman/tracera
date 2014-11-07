@@ -21,16 +21,21 @@ class Frontend(object):
     def splitCacheLines(self, access):
         address, size, ac_type = access
         lines = []
-
+        remaining_size = size
+        
         line = self.cacheLine(address)
         next_line = line + self.line_size
-        lines.append((line, ac_type))
+        cur_size = min(next_line - address, remaining_size)
+        lines.append((line, address, cur_size, ac_type))
+        remaining_size -= cur_size
 
         while address + size >= next_line:
             line = next_line
             next_line += self.line_size
-            lines.append((line, ac_type))
-        
+            cur_size = min(self.line_size, remaining_size)
+            lines.append((line, line, cur_size, ac_type))
+            remaining_size -= cur_size
+
         return lines
 
     # This takes in the Warp creating the access,
@@ -55,7 +60,7 @@ class Frontend(object):
             # Create Requests
             thread_requests = []
             for line in lines:
-                r = Request(line[0], line[1])
+                r = Request(line[0], line[1], line[2], line[3])
 
                 # We need a separate copy for each so that the Requests
                 #  can change the active threads without causing side-effects
@@ -84,3 +89,11 @@ class Frontend(object):
             for request in q:
                 print request,
             print "]"
+
+# def test():
+#     fe = Frontend(2, 16, 128)
+
+#     access = (0x10, 128, "R")
+#     print fe.splitCacheLines(access)
+
+# test()
