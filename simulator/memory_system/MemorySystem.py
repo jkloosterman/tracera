@@ -4,6 +4,8 @@ from Dram import Dram
 from MissQueue import MissQueue
 from WarpReconstructor import WarpReconstructor
 
+collect_trace = False
+
 def CreateMemorySystem(system_type):
     if system_type == "zero_latency":
         return ZeroLatency()
@@ -12,13 +14,17 @@ def CreateMemorySystem(system_type):
         assert(False)
 
 class MemorySystem(object):
-    def __init__(self, frontend, coalescer, caches, miss_queue_size, stats, core_idx, cache_system_ticks):
+    def __init__(self, frontend, coalescer, caches, miss_queue_size, stats, core_idx, cache_system_ticks, config):
         self.frontend = frontend
         self.coalescer = coalescer
         self.num_banks = len(caches)
         self.stats = stats
         self.core_idx = core_idx
         self.name = "core_%d.memory_system" % core_idx
+
+        if collect_trace:
+            filename = config.output_file + ".mem_trace"
+            self.fp = open(filename, "w")
 
         self.miss_queues = []
         for i in range(len(caches)):
@@ -68,13 +74,38 @@ class MemorySystem(object):
         if self.frontend.canIssue():
             if self.coalescer.canAccept():
                 self.stats.increment(self.name + ".coalescer_accept_cycles", 1)
-                self.coalescer.accept(self.frontend.issue())
+                requests = self.frontend.issue()
+                if collect_trace:
+                    self.dump_requests(requests)
+                self.coalescer.accept(requests)
             else:
                 self.stats.increment(self.name + ".coalescer_stall_cycles", 1)
 
         if self.coalescer.canIssue():
             self.stats.increment(self.name + ".coalescer_issue_cycles", 1)
             self.coalescer.issue(self.miss_queues)
+
+    def dump_requests(self, requests):
+        first_non_none = None
+        for request in requests:
+            if request is not None:
+                first_not_none = request
+                break
+        assert(first_not_none is not None)
+
+        warp_id = first_not_none.requesters[0].scoreboard.warp_id
+        if first_not_none.access_type == "L":
+            load_store = "LD"
+        else:
+            load_store = "ST"
+
+        self.fp.write("%d,%s" % (warp_id, load_store))
+        for request in requests:
+            if request is None:
+                self.fp.write(",-1")
+            else:
+                self.fp.write(",%x" % request.cache_line)
+        self.fp.write("\n")
 
     def dump(self):
         self.frontend.dump()

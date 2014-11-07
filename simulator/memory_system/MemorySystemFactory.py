@@ -84,4 +84,4 @@ class MemorySystemFactory(object):
             print "Choices: 'dram_only', 'l1', 'l2'"
             exit(1)
 
-        return MemorySystem(frontend, coalescer, banks, self.config.miss_queue_size, self.stats, core_idx, cache_system_ticks)
+        return MemorySystem(frontend, coalescer, banks, self.config.miss_queue_size, self.stats, core_idx, cache_system_ticks, self.config)
