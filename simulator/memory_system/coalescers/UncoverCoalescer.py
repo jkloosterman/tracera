@@ -6,7 +6,7 @@ class UncoverCoalescer(Coalescer):
         super(UncoverCoalescer, self).__init__(banking_policy, name, stats)
         self.depth = depth
         self.request_deque = []
-        self.stats.initialize_average("uncover_queue_occupancy")
+        self.stats.initialize_average("coalescer_queue_occupancy")
         self.stats.initialize_average("uncover_queue_max_head_distance_avg")
         self.stats.initialize("uncover_queue_max_head_distance_max")
 
@@ -112,7 +112,7 @@ class UncoverCoalescer(Coalescer):
         print ""
 
     def tick(self):
-        self.stats.increment_average("uncover_queue_occupancy", len(self.request_deque))
+        self.stats.increment_average("coalescer_queue_occupancy", len(self.request_deque))
 
         max_width = 0
         for warp in self.request_deque:
@@ -122,7 +122,7 @@ class UncoverCoalescer(Coalescer):
         heads = []
         for lane in range(max_width):
             for idx, warp in enumerate(self.request_deque):
-                if warp[lane] is not None:
+                if lane < len(warp) and warp[lane] is not None:
                     heads.append(idx)
                     break
         

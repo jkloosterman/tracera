@@ -15,7 +15,7 @@ class WarpScheduler(object):
         self.issue_width = issue_width
         self.name = name
         self.stats = stats
-        self.stats.initialize(name + ".scheduler.ip_delta")
+        self.stats.initialize_average(name + ".scheduler.ip_delta")
 
     def increment_stats(self):
         ip_set = set([x.ip for x in self.scoreboards if x is not None and x.ip >= 0])
@@ -25,7 +25,7 @@ class WarpScheduler(object):
         delta = 0
         for i in range(1, len(ips)):
             delta += ips[i] - ips[i-1]
-        self.stats.increment(self.name + ".scheduler.ip_delta", delta)
+        self.stats.increment_average(self.name + ".scheduler.ip_delta", delta)
 
     def accepting_outputs(self):
         for output in self.outputs:

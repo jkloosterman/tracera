@@ -6,6 +6,7 @@ class FullAssociativeCoalescer(Coalescer):
         super(FullAssociativeCoalescer, self).__init__(banking_policy, name, stats)
         self.depth = depth
         self.request_deque = []
+        self.stats.initialize_average("coalescer_queue_occupancy")
 
     def canAccept(self):
         return len(self.request_deque) < self.depth
@@ -108,4 +109,4 @@ class FullAssociativeCoalescer(Coalescer):
         print ""
 
     def tick(self):
-        pass
+        self.stats.increment_average("coalescer_queue_occupancy", len(self.request_deque))

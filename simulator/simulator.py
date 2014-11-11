@@ -29,6 +29,7 @@ def load_config(filename):
 config_params = [
     "sqlite_file",
     "loop_id",
+    "run_id",
     "num_cores",
     "warp_width",
     "num_active_warps",
