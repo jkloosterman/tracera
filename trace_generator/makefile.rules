@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 TOOL_CXXFLAGS += -std=c++0x -g
 TOOL_LIBS += -lsqlite3
 

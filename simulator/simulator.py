@@ -37,8 +37,12 @@ config_params = [
     "line_size",
     "mem_frontend_depth",
     "dram_latency",
+    "dram_ports",
     "miss_queue_size",
-    "coalescer"
+    "coalescer",
+    "l1_size",
+    "coalescer_depth",
+    "banking_policy"
 ]
 
 def dump_config_csv(config, fp):
