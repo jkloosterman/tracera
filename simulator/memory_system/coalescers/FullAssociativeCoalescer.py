@@ -69,6 +69,7 @@ class FullAssociativeCoalescer(Coalescer):
 
             # Otherwise coalesce with all other requests to that line.
             self.coalesce_all(first_request, first_request_lane, first_request_idx)
+            self.coalesce_stats(first_request)
 
             # Send the request off to the bank.
             bank_caches[i].accept(first_request)
@@ -105,3 +106,6 @@ class FullAssociativeCoalescer(Coalescer):
                     print request,
             print ""
         print ""
+
+    def tick(self):
+        pass

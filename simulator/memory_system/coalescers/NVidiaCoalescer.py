@@ -143,3 +143,6 @@ class NVidiaCoalescer(object):
     def dump(self):
         print "Nvidia coalescer:"
         print self.n_requests
+
+    def tick(self):
+        pass

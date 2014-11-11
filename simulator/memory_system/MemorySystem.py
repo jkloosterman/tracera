@@ -71,6 +71,13 @@ class MemorySystem(object):
         for mq in self.miss_queues:
             mq.tick()
 
+        self.coalescer.tick()
+
+        ## XXXX: this used to be last. Couldn't figure out why, so moved it.
+        if self.coalescer.canIssue():
+            self.stats.increment(self.name + ".coalescer_issue_cycles", 1)
+            self.coalescer.issue(self.miss_queues)
+
         if self.frontend.canIssue():
             if self.coalescer.canAccept():
                 self.stats.increment(self.name + ".coalescer_accept_cycles", 1)
@@ -80,10 +87,6 @@ class MemorySystem(object):
                 self.coalescer.accept(requests)
             else:
                 self.stats.increment(self.name + ".coalescer_stall_cycles", 1)
-
-        if self.coalescer.canIssue():
-            self.stats.increment(self.name + ".coalescer_issue_cycles", 1)
-            self.coalescer.issue(self.miss_queues)
 
     def dump_requests(self, requests):
         first_non_none = None

@@ -27,6 +27,12 @@ class Stats(object):
         else:
             self.stats[name] += amount
 
+    def increment_max(self, name, amount):
+        if name not in self.stats:
+            self.stats[name] = amount
+        else:
+            self.stats[name] = max(self.stats[name], amount)
+
     def increment_average(self, name, amount):
         self.stats[name] += amount
         self.average_counts[name] += 1

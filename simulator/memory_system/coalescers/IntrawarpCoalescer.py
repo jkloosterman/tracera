@@ -55,10 +55,15 @@ class IntrawarpCoalescer(Coalescer):
                 continue
             if not bank_caches[i].can_accept_line(self.bank_reqs[i][-1].cache_line):
                 continue
-            
-            bank_caches[i].accept(self.bank_reqs[i].pop())
+
+            request = self.bank_reqs[i].pop()
+            self.coalesce_stats(request)
+            bank_caches[i].accept(request)
             if len(self.bank_reqs[i]) == 0:
                 del self.bank_reqs[i]
     
     def dump(self):
         print "Intrawarp Coalescer: %d banks with requests" % len(self.bank_reqs)
+
+    def tick(self):
+        pass

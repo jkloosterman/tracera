@@ -6,6 +6,9 @@ class UncoverCoalescer(Coalescer):
         super(UncoverCoalescer, self).__init__(banking_policy, name, stats)
         self.depth = depth
         self.request_deque = []
+        self.stats.initialize_average("uncover_queue_occupancy")
+        self.stats.initialize_average("uncover_queue_max_head_distance_avg")
+        self.stats.initialize("uncover_queue_max_head_distance_max")
 
     def canAccept(self):
         return len(self.request_deque) < self.depth
@@ -70,6 +73,7 @@ class UncoverCoalescer(Coalescer):
 
             # Otherwise coalesce with all other requests to that line.
             self.coalesce_top(first_request)
+            self.coalesce_stats(first_request)
 
             # Send the request off to the bank.
             bank_caches[bank].accept(first_request)
@@ -106,3 +110,26 @@ class UncoverCoalescer(Coalescer):
                     print request,
             print ""
         print ""
+
+    def tick(self):
+        self.stats.increment_average("uncover_queue_occupancy", len(self.request_deque))
+
+        max_width = 0
+        for warp in self.request_deque:
+            if len(warp) > max_width:
+                max_width = len(warp)
+
+        heads = []
+        for lane in range(max_width):
+            for idx, warp in enumerate(self.request_deque):
+                if warp[lane] is not None:
+                    heads.append(idx)
+                    break
+        
+        if len(heads):
+            min_head = min(heads)
+            max_head = max(heads)
+            head_distance = max_head - min_head
+
+            self.stats.increment_average("uncover_queue_max_head_distance_avg", head_distance)
+            self.stats.increment_max("uncover_queue_max_head_distance_max", head_distance)
