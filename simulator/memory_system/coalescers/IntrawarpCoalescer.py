@@ -38,6 +38,14 @@ class IntrawarpCoalescer(Coalescer):
             else:
                 self.bank_reqs[bank].append(first)
 
+        max_bank_requests = 0
+        for bank, requests in self.bank_reqs.iteritems():
+            max_bank_requests = max(max_bank_requests, len(requests))
+        if max_bank_requests > 1:
+            self.stats.increment("intra_warp_bank_conflicts", max_bank_requests - 1)
+            self.stats.increment("intra_warp_bank_conflicts_%d" % (max_bank_requests - 1), 1)
+            self.stats.increment("intra_warp_bank_conflict_cycles", 1)
+
     def canIssue(self):
         return len(self.bank_reqs) > 0
 

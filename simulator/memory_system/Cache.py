@@ -27,9 +27,14 @@ class Cache(object):
 
     def can_accept_line(self, line):
         if self.requests_this_cycle >= self.ports:
+            self.stats.increment(self.name + ".cant_accept_ports", 1)
             return False
 
-        return self.set_for_line(line).can_accept_line(line)
+        if not self.set_for_line(line).can_accept_line(line):
+            self.stats.increment(self.name + ".cant_accept_line", 1)
+            return False
+
+        return True
 
     def accept(self, line):
         self.requests_this_cycle += 1

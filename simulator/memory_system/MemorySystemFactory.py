@@ -17,7 +17,7 @@ class MemorySystemFactory(object):
         self.stats = stats
 
     def createMemorySystem(self, core_idx):
-        frontend = Frontend(self.config.mem_frontend_depth, self.config.warp_width, self.config.line_size)
+        frontend = Frontend(self.config.mem_frontend_depth, self.config.warp_width, self.config.line_size, self.stats)
 
         if self.config.cache_system == 'dram_only':
             associativity = 1
@@ -43,7 +43,7 @@ class MemorySystemFactory(object):
         elif self.config.coalescer == 'greedy':
             coalescer = GreedyCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         elif self.config.coalescer == 'nvidia':
-            coalescer = NVidiaCoalescer(self.config.line_size, self.config.line_size / 4)
+            coalescer = NVidiaCoalescer(self.config.line_size, self.config.line_size / 4, self.stats)
         else:
             print "MemorySystemFactory:"
             print "Unknown coalescer type '%s'." % self.config.coalescer

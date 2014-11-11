@@ -8,8 +8,11 @@ class MissQueue(object):
         self.ready_idxs = []
         self.stats = stats
         self.name = name
-        self.stats.initialize(self.name + ".requests")
-        self.stats.initialize(self.name + ".total_latency")
+        self.stats.initialize_average(self.name + ".requests")
+        self.stats.initialize_average(self.name + ".latency")
+        self.stats.initialize_average("miss_queue_occupancy")
+        self.stats.initialize_average("miss_queue_ready")
+        self.stats.initialize_average("miss_queue_outstanding")
 
     def can_accept_line(self, line):
         hasSlot = False
@@ -23,8 +26,8 @@ class MissQueue(object):
     def accept(self, request):
         assert(self.can_accept_line(request.cache_line))
         latency = self.cache.accept(request.cache_line)
-        self.stats.increment(self.name + ".requests", 1)
-        self.stats.increment(self.name + ".total_latency", latency)
+        self.stats.increment_average(self.name + ".requests", 1)
+        self.stats.increment_average(self.name + ".latency", latency)
 
         idx = self.addToQueue(request)
         if latency == 0:
@@ -62,6 +65,19 @@ class MissQueue(object):
 
     def tick(self):
         self.cur_tick += 1
+
+        occupancy = 0
+        for slot in self.queue:
+            if slot is not None:
+                occupancy += 1
+
+        future_events = 0
+        for tick, events in self.future_events.iteritems():
+            future_events += len(events)
+
+        self.stats.increment_average("miss_queue_occupancy", occupancy)
+        self.stats.increment_average("miss_queue_ready", len(self.ready_idxs))
+        self.stats.increment_average("miss_queue_outstanding", future_events)
 
         if self.cur_tick in self.future_events:
             self.ready_idxs += self.future_events[self.cur_tick]

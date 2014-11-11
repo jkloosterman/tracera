@@ -3,11 +3,12 @@ import itertools
 from Request import *
 
 class Frontend(object):
-    def __init__(self, queue_depth, warp_width, line_size):
+    def __init__(self, queue_depth, warp_width, line_size, stats):
         self.queue_depth = queue_depth
         self.warp_width = warp_width
         self.line_size = line_size
         self.queue = []
+        self.stats = stats
 
     def canAccept(self):
         return len(self.queue) < self.queue_depth
@@ -42,6 +43,7 @@ class Frontend(object):
     #  and the array of accesses, which are tuples
     #  (base, size, read/write)
     def accept(self, warp):
+        distinct_lines = set()
         requests = []
 
 #        assert(len(warp.instruction) == self.warp_width)
@@ -56,6 +58,8 @@ class Frontend(object):
                     # Note we do this just for loads, not for stores,
                     #  because stores are independent anyways.
                     warp.add_extra_completes(i, len(lines) - 1)
+                for line in lines:
+                    distinct_lines.add(line)
 
             # Create Requests
             thread_requests = []
@@ -75,6 +79,9 @@ class Frontend(object):
  #       assert(len(requests) == self.warp_width)
         request = list(itertools.izip_longest(*requests))
         self.queue += request
+
+        # Add number of lines to histogram
+        self.stats.increment("lines_per_warp_%d" % len(distinct_lines), 1)
 
     def issue(self):
         return self.queue.pop(0)
