@@ -16,36 +16,25 @@ class FullAssociativeCoalescer(Coalescer):
     def canIssue(self):
         return len(self.request_deque) > 0
 
-    def coalesce_all(self, request, lane, idx):
-        # Do a first scan to find any stores to the line in the thread.
-        # We can only coalesce requests that come before
-        #  the store in the thread.
-        store_idx = -1
-        if request.access_type == "S":
-            store_idx = idx
-        else:
-            for i, warp in enumerate(self.request_deque):
-                if len(warp) > lane:
-                    if warp[lane] is None:
-                        continue
-                    if warp[lane].cache_line != request.cache_line:
-                        continue
-                    if warp[lane].access_type == "S":
-                        store_idx = i
-                        break
+    def coalesce_all(self, request, req_lane, req_idx):
+        max_width = 0
+        for warp in self.request_deque:
+            if len(warp) > max_width:
+                max_width = len(warp)
 
         num_coalesces = 0
-        for warp_idx, warp in enumerate(self.request_deque):
-            for i in range(len(warp)):
-                # Don't coalesce past stores in the same thread
-                if store_idx >= 0 and warp_idx > store_idx and i == lane:
-                    continue
-                if warp[i] is None:
-                    continue
-                if warp[i].cache_line == request.cache_line and warp[i].access_type == request.access_type:
-                    request.merge(warp[i])
-                    warp[i] = None
-                    num_coalesces += 1
+        for lane in range(max_width):
+            foundWarps = []
+            for idx, warp in enumerate(self.request_deque):
+                if lane < len(warp) and warp[lane] is not None and warp[lane].cache_line == request.cache_line:
+                    if warp[lane].access_type == request.access_type:
+                        if not (warp[lane].requesters[0].scoreboard.warp_id in foundWarps):
+                            request.merge(warp[lane])
+                            warp[lane] = None
+                            num_coalesces += 1
+                    else:
+                        foundWarps.append(warp[lane].requesters[0].scoreboard.warp_id)
+
 #        print "%d coalesces" % num_coalesces
 #        print request
 
