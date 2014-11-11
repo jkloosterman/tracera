@@ -13,6 +13,7 @@ class MissQueue(object):
         self.stats.initialize_average("miss_queue_occupancy")
         self.stats.initialize_average("miss_queue_ready")
         self.stats.initialize_average("miss_queue_outstanding")
+        self.stats.initialize_average("total_avg_latency")
 
     def can_accept_line(self, line):
         hasSlot = False
@@ -28,6 +29,7 @@ class MissQueue(object):
         latency = self.cache.accept(request.cache_line)
         self.stats.increment_average(self.name + ".requests", 1)
         self.stats.increment_average(self.name + ".latency", latency)
+        self.stats.increment_average("total_avg_latency", latency)
 
         idx = self.addToQueue(request)
         if latency == 0:
