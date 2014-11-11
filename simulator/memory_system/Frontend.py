@@ -9,6 +9,7 @@ class Frontend(object):
         self.line_size = line_size
         self.queue = []
         self.stats = stats
+        self.stats.initialize_average("lines_per_warp_avg")
 
     def canAccept(self):
         return len(self.queue) < self.queue_depth
@@ -82,6 +83,7 @@ class Frontend(object):
 
         # Add number of lines to histogram
         self.stats.increment("lines_per_warp_%d" % len(distinct_lines), 1)
+        self.stats.increment_average("lines_per_warp_avg", len(distinct_lines))
 
     def issue(self):
         return self.queue.pop(0)

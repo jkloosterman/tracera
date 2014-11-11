@@ -1,5 +1,6 @@
 class CacheSet(object):
-    def __init__(self, mem_side, associativity, hit_latency, stats, name):
+    def __init__(self, cache, mem_side, associativity, hit_latency, stats, name):
+        self.cache = cache
         self.mem_side = mem_side
         self.associativity = associativity
         self.hit_latency = hit_latency
@@ -30,6 +31,8 @@ class CacheSet(object):
             return True
         elif line in self.mshrs:
             return True
+        elif not self.cache.has_outstanding_request():
+            return False
         else:
             return self.mem_side.can_accept_line(line)
 
@@ -55,6 +58,7 @@ class CacheSet(object):
             latency = self.mem_side.accept(line)
 
             assert(latency > 0)
+            self.cache.outstanding_request_add()
             data_tick = self.cur_tick + latency
             
             if data_tick in self.future_events:
@@ -88,6 +92,7 @@ class CacheSet(object):
                     self.lines.pop(0)
                 self.lines.append(line)
                 del self.mshrs[line]
+                self.cache.outstanding_request_finished()
                 
 
     

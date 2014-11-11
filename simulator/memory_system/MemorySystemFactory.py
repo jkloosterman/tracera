@@ -53,6 +53,7 @@ class MemorySystemFactory(object):
         # Allow any number of requests to L1 per cycle. The coalescer generates the
         #  limit.
         l1_ports = 10000
+        l1_outstanding_requests = 10000
 
         if self.config.cache_system == 'dram_only':
             banks = [self.dram for i in range(self.config.num_banks)]
@@ -63,7 +64,7 @@ class MemorySystemFactory(object):
             for i in range(self.config.num_banks):
                 cache = Cache(
                     self.dram, l1_bank_size, cache_num_banks, self.config.line_size,
-                    self.config.l1_associativity, self.config.l1_latency, l1_ports,
+                    self.config.l1_associativity, self.config.l1_latency, l1_ports, l1_outstanding_requests,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
             cache_system_ticks = [self.dram] + banks
@@ -71,14 +72,14 @@ class MemorySystemFactory(object):
             l2 = Cache(
                 self.dram, self.config.l2_size, 1, self.config.line_size,
                 self.config.l2_associativity, self.config.l2_latency, self.config.l2_ports,
-                self.stats, "core_%d.l2" % core_idx)
+                self.config.l2_outstanding_requests, self.stats, "core_%d.l2" % core_idx)
 
             l1_bank_size = self.config.l1_size / self.config.num_banks
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
                     l2, l1_bank_size, cache_num_banks, self.config.line_size,
-                    self.config.l1_associativity, self.config.l1_latency, l1_ports,
+                    self.config.l1_associativity, self.config.l1_latency, l1_ports, l1_outstanding_requests,
                     self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
             cache_system_ticks = [self.dram, l2] + banks
