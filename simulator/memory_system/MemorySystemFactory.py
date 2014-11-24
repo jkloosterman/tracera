@@ -9,6 +9,7 @@ from coalescers.FullAssociativeCoalescer import FullAssociativeCoalescer
 from coalescers.UncoverCoalescer import UncoverCoalescer
 from coalescers.UncoverSyncedCoalescer import UncoverSyncedCoalescer
 from coalescers.HybridCoalescer import HybridCoalescer
+from coalescers.SortCoalescer import SortCoalescer
 from coalescers.GreedyCoalescer import GreedyCoalescer
 from coalescers.NVidiaCoalescer import NVidiaCoalescer
 
@@ -46,6 +47,8 @@ class MemorySystemFactory(object):
             coalescer = UncoverSyncedCoalescer(banking_policy, self.config.coalescer_depth, 1000, core_name, self.stats)
         elif self.config.coalescer == 'hybrid':
             coalescer = HybridCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
+        elif self.config.coalescer == 'sort':
+            coalescer = SortCoalescer(banking_policy, self.config.coalescer_depth, self.config.num_banks, core_name, self.stats)
         elif self.config.coalescer == 'greedy':
             coalescer = GreedyCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         elif self.config.coalescer == 'nvidia':
