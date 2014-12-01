@@ -1,7 +1,7 @@
 from Coalescer import Coalescer
 
 class UncoverSyncedCoalescer(Coalescer):
-    def __init__(self, banking_policy, depth, sync_cycles, name, stats):
+    def __init__(self, banking_policy, depth, sync_distance, name, stats):
         super(UncoverSyncedCoalescer, self).__init__(banking_policy, name, stats)
         self.depth = depth
         self.request_deque = []
@@ -9,8 +9,7 @@ class UncoverSyncedCoalescer(Coalescer):
         self.stats.initialize_average("uncover_synced_queue_max_head_distance_avg")
         self.stats.initialize("uncover_synced_queue_max_head_distance_max")
 
-        self.sync_cycles = sync_cycles
-        self.cycle = 0
+        self.sync_distance = sync_distance
         self.sync_mode = False
 
     def canAccept(self):
@@ -135,9 +134,6 @@ class UncoverSyncedCoalescer(Coalescer):
 
     def tick(self):
         self.stats.increment_average("coalescer_queue_occupancy", len(self.request_deque))
-        self.cycle += 1
-        if self.cycle % self.sync_cycles == 0:
-            self.sync_mode = True
 
         max_width = 0
         for warp in self.request_deque:
@@ -155,6 +151,9 @@ class UncoverSyncedCoalescer(Coalescer):
             min_head = min(heads)
             max_head = max(heads)
             head_distance = max_head - min_head
+
+            if head_distance >= self.sync_distance:
+                self.sync_mode = True
 
             self.stats.increment_average("uncover_synced_queue_max_head_distance_avg", head_distance)
             self.stats.increment_max("uncover_synced_queue_max_head_distance_max", head_distance)

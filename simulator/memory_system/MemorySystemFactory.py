@@ -44,7 +44,8 @@ class MemorySystemFactory(object):
         elif self.config.coalescer == 'uncover':
             coalescer = UncoverCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         elif self.config.coalescer == 'uncover_synced':
-            coalescer = UncoverSyncedCoalescer(banking_policy, self.config.coalescer_depth, 1000, core_name, self.stats)
+            sync_distance = 8
+            coalescer = UncoverSyncedCoalescer(banking_policy, self.config.coalescer_depth, sync_distance, core_name, self.stats)
         elif self.config.coalescer == 'hybrid':
             coalescer = HybridCoalescer(banking_policy, self.config.coalescer_depth, core_name, self.stats)
         elif self.config.coalescer == 'sort':
