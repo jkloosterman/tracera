@@ -13,31 +13,43 @@ class BankingPolicyConsecutive(BankingPolicy):
 
         self.num_banks = num_banks
         self.line_bits = int(math.log(line_size, 2))
+        self.bank_bits = int(math.log(num_banks, 2))
 
     def bank(self, line):
         return (line >> self.line_bits) & (self.num_banks - 1)
 
-# Hash the set and tag bits to map to a bank.
-# But then which bits should the cache use?
-# http://mprc.pku.cn/mentors/training/ISCAreading/1993/p337-gao/p337-gao.pdf
-#
-#  p = number of banks
-#  d = logical address
-#  physical address (u,v): u-th word in v-th bank
-#  v = d mod p
-#  u = left l' bits of d = d mod m
-#  Module has m = 2^l' words
-#
-# My interpretation:
-#    [tag|set|offset] -> like we had no banks.
-# We do [tag|set] mod (# banks) to find the bank.
-class BankingPolicyChineseRemainder(BankingPolicy):
+    def set(self, line):
+        return line >> (self.line_bits + self.bank_bits)
+
+class BankingPolicyPrime(BankingPolicy):
     def __init__(self, num_banks, line_size):
-        assert(self.is_power2(line_size))
         assert(not self.is_power2(num_banks))
+        assert(self.is_power2(line_size))
 
         self.num_banks = num_banks
         self.line_bits = int(math.log(line_size, 2))
 
     def bank(self, line):
         return (line >> self.line_bits) % self.num_banks
+
+    def set(self, line):
+        return (line >> self.line_bits) / self.num_banks
+
+class BankingPolicySkew(BankingPolicy):
+    def __init__(self, num_banks, line_size):
+        assert(self.is_power2(num_banks))
+        assert(self.is_power2(line_size))
+
+        self.num_banks = num_banks
+        self.line_bits = int(math.log(line_size, 2))
+        self.bank_bits = int(math.log(num_banks, 2))
+
+    def bank(self, line):
+        a = (line >> self.line_bits)
+        r = a / self.num_banks
+        skew = r % self.num_banks
+        bank = (a + skew) % self.num_banks
+        return bank
+
+    def set(self, line):
+        return (line >> self.line_bits) / self.num_banks

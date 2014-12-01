@@ -8,7 +8,7 @@ class MissQueue(object):
         self.ready_idxs = []
         self.stats = stats
         self.name = name
-        self.stats.initialize_average(self.name + ".requests")
+        self.stats.initialize(self.name + ".requests")
         self.stats.initialize_average(self.name + ".latency")
         self.stats.initialize_average("miss_queue_occupancy")
         self.stats.initialize_average("miss_queue_ready")
@@ -27,7 +27,7 @@ class MissQueue(object):
     def accept(self, request):
         assert(self.can_accept_line(request.cache_line))
         latency = self.cache.accept(request.cache_line)
-        self.stats.increment_average(self.name + ".requests", 1)
+        self.stats.increment(self.name + ".requests", 1)
         self.stats.increment_average(self.name + ".latency", latency)
         self.stats.increment_average("total_avg_latency", latency)
 

@@ -29,10 +29,10 @@ class MemorySystemFactory(object):
  
         if self.config.banking_policy == 'consecutive':
             banking_policy = BankingPolicyConsecutive(self.config.num_banks, self.config.line_size)
-            cache_num_banks = self.config.num_banks
-        elif self.config.banking_policy == 'chinese_remainder':
-            banking_policy = BankingPolicyChineseRemainder(self.config.num_banks, self.config.line_size)
-            cache_num_banks = 1
+        elif self.config.banking_policy == 'prime':
+            banking_policy = BankingPolicyPrime(self.config.num_banks, self.config.line_size)
+        elif self.config.banking_policy == 'skew':
+            banking_policy = BankingPolicySkew(self.config.num_banks, self.config.line_size)
         else:
             assert(false)
 
@@ -72,24 +72,28 @@ class MemorySystemFactory(object):
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
-                    self.dram, l1_bank_size, cache_num_banks, self.config.line_size,
+                    self.dram, l1_bank_size, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency, l1_ports, l1_outstanding_requests,
-                    self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
+                    banking_policy, self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
             cache_system_ticks = [self.dram] + banks
         elif self.config.cache_system == 'l2':
+            # L2 has no banking
+            l2_banking_policy = BankingPolicyConsecutive(1, self.config.line_size)
             l2 = Cache(
-                self.dram, self.config.l2_size, 1, self.config.line_size,
+                self.dram, self.config.l2_size, self.config.line_size,
                 self.config.l2_associativity, self.config.l2_latency, self.config.l2_ports,
-                self.config.l2_outstanding_requests, self.stats, "core_%d.l2" % core_idx)
+                self.config.l2_outstanding_requests, l2_banking_policy, 
+                self.stats, "core_%d.l2" % core_idx)
 
+            # Distribute L1 size across banks
             l1_bank_size = self.config.l1_size / self.config.num_banks
             banks = []
             for i in range(self.config.num_banks):
                 cache = Cache(
-                    l2, l1_bank_size, cache_num_banks, self.config.line_size,
+                    l2, l1_bank_size, self.config.line_size,
                     self.config.l1_associativity, self.config.l1_latency, l1_ports, l1_outstanding_requests,
-                    self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
+                    banking_policy, self.stats, "core_%d.l1_bank_%d" % (core_idx, i))
                 banks.append(cache)
             cache_system_ticks = [self.dram, l2] + banks
         else:
