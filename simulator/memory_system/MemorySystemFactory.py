@@ -103,5 +103,6 @@ class MemorySystemFactory(object):
             print "Choices: 'dram_only', 'l1', 'l2'"
             exit(1)
 
-        bank_miss_queue_size = self.config.miss_queue_size / self.config.num_banks
+#        bank_miss_queue_size = self.config.miss_queue_size / self.config.num_banks
+        bank_miss_queue_size = self.config.miss_queue_size
         return MemorySystem(frontend, coalescer, banks, bank_miss_queue_size, self.stats, core_idx, cache_system_ticks, self.config)
